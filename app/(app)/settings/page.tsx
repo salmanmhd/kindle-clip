@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { sendDailyDigest } from '@/lib/email';
 import crypto from 'node:crypto';
+import TestEmailButton from '@/components/TestEmailButton';
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -33,18 +34,22 @@ export default async function SettingsPage() {
   async function sendTestEmail() {
     'use server';
     const session = await auth();
-    if (!session?.user?.id) return;
+    if (!session?.user?.id) return { success: false, error: 'Not logged in' };
     
     await dbConnect();
     const user = await User.findById(session.user.id);
-    if (!user) return;
+    if (!user) return { success: false, error: 'User not found' };
     
+    if (!process.env.RESEND_API_KEY) {
+      return { success: false, error: 'Resend API Key is not configured' };
+    }
+
     const randomHighlights = await Highlight.aggregate([
       { $match: { userId: user._id.toString(), deletedAt: null } },
       { $sample: { size: 1 } }
     ]);
     
-    if (randomHighlights.length === 0) return;
+    if (randomHighlights.length === 0) return { success: false, error: 'No highlights found to send' };
     
     let token = user.unsubscribeToken;
     if (!token) {
@@ -53,7 +58,12 @@ export default async function SettingsPage() {
       await user.save();
     }
     
-    await sendDailyDigest(user.email, randomHighlights, token);
+    try {
+      await sendDailyDigest(user.email, randomHighlights, token);
+      return { success: true };
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Failed to send' };
+    }
   }
 
   return (
@@ -63,7 +73,7 @@ export default async function SettingsPage() {
       <div className="bg-card/30 border border-border rounded-xl p-6 backdrop-blur-md">
         <h2 className="text-xl font-serif text-ink mb-4">Daily Digest Email</h2>
         <p className="text-sm text-muted mb-6">
-          Receive a daily email with 5 random highlights from your library to rediscover past insights.
+          Receive a daily email with 1 random highlight from your library to rediscover past insights.
         </p>
         
         <form action={updateSettings} className="space-y-4">
@@ -93,14 +103,7 @@ export default async function SettingsPage() {
           <p className="text-sm text-muted mb-4">
             Verify your email configuration by sending a test digest immediately.
           </p>
-          <form action={sendTestEmail}>
-            <button 
-              type="submit" 
-              className="bg-secondary text-ink px-4 py-2 rounded text-sm font-medium hover:bg-secondary/80 transition-colors border border-border"
-            >
-              Send test email now
-            </button>
-          </form>
+          <TestEmailButton action={sendTestEmail} />
         </div>
       </div>
     </div>

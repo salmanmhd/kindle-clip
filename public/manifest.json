@@ -1,0 +1,21 @@
+{
+  "name": "Kindle Clipper",
+  "short_name": "Clipper",
+  "description": "Read and organize your Kindle highlights anywhere.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FBF9F4",
+  "theme_color": "#1C1B19",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -34,6 +34,12 @@ export const metadata = {
   title: "Kindle Clipper",
   description: "Read your Kindle highlights anywhere",
   manifest: "/manifest.json",
+  themeColor: "#1C1B19",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Kindle Clipper",
+  },
 }
 
 export default function RootLayout({

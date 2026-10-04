@@ -21,14 +21,29 @@ export default function Reader({ highlights, bookId, title }: { highlights: High
   const [direction, setDirection] = useState(0);
   const [shuffleMode, setShuffleMode] = useState(false);
   const [displayList, setDisplayList] = useState(highlights);
+  
+  // Font controls
+  const [fontSize, setFontSize] = useState(24);
+  const [lineHeight, setLineHeight] = useState(1.6);
 
-  // Sync with local storage to remember last read position
+  // Sync with local storage
   useEffect(() => {
     const saved = localStorage.getItem(`reader_pos_${bookId}`);
     if (saved && !shuffleMode) {
       setCurrentIndex(Math.min(parseInt(saved, 10), highlights.length - 1));
     }
+    const savedSize = localStorage.getItem('reader_fontSize');
+    if (savedSize) setFontSize(parseInt(savedSize, 10));
+    const savedLineHeight = localStorage.getItem('reader_lineHeight');
+    if (savedLineHeight) setLineHeight(parseFloat(savedLineHeight));
   }, [bookId, highlights.length, shuffleMode]);
+
+  const saveSettings = (newSize: number, newHeight: number) => {
+    localStorage.setItem('reader_fontSize', newSize.toString());
+    localStorage.setItem('reader_lineHeight', newHeight.toString());
+    setFontSize(newSize);
+    setLineHeight(newHeight);
+  };
 
   const savePosition = (index: number) => {
     if (!shuffleMode) {
@@ -105,7 +120,24 @@ export default function Reader({ highlights, bookId, title }: { highlights: High
           <span className="font-sans text-sm hidden sm:inline">Back to book</span>
         </Link>
 
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-1 border border-border rounded-full p-1 bg-popover shadow-sm mr-2 hidden sm:flex">
+            <button 
+              onClick={() => saveSettings(Math.max(16, fontSize - 2), lineHeight)}
+              className="w-8 h-8 flex items-center justify-center rounded-full text-ink hover:bg-secondary transition-colors font-serif text-sm"
+              title="Decrease font size"
+            >
+              A-
+            </button>
+            <button 
+              onClick={() => saveSettings(Math.min(48, fontSize + 2), lineHeight)}
+              className="w-8 h-8 flex items-center justify-center rounded-full text-ink hover:bg-secondary transition-colors font-serif text-lg"
+              title="Increase font size"
+            >
+              A+
+            </button>
+          </div>
+          
           <button 
             onClick={toggleShuffle} 
             className={`transition-colors p-2 -mr-2 ${shuffleMode ? 'text-ink' : 'text-muted hover:text-ink'}`}
@@ -150,12 +182,18 @@ export default function Reader({ highlights, bookId, title }: { highlights: High
               <Bookmark className="absolute -top-12 text-muted/50 w-6 h-6 fill-current" />
             )}
             
-            <p className="text-ink font-serif text-[1.5rem] sm:text-[2rem] leading-relaxed text-center text-balance select-none">
+            <p 
+              className="text-ink font-serif text-center text-balance select-none transition-all duration-300"
+              style={{ fontSize: `${fontSize}px`, lineHeight }}
+            >
               {current.text}
             </p>
 
             {current.note && (
-              <p className="mt-8 text-ink/80 font-serif text-[1.1rem] sm:text-[1.25rem] italic text-center select-none border-t border-border pt-8 max-w-md">
+              <p 
+                className="mt-8 text-ink/80 font-serif italic text-center select-none border-t border-border pt-8 max-w-md transition-all duration-300"
+                style={{ fontSize: `${Math.max(14, fontSize - 8)}px`, lineHeight }}
+              >
                 {current.note}
               </p>
             )}
