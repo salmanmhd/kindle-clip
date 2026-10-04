@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence, LazyMotion, domAnimation } from 'framer-motion';
 import { ArrowLeft, Shuffle, Bookmark, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -133,7 +133,8 @@ export default function Reader({ highlights, bookId, title }: { highlights: High
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center overflow-hidden selection:bg-muted/30">
+    <LazyMotion features={domAnimation}>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center overflow-hidden selection:bg-muted/30">
       
       {/* Minimalist Top Nav */}
       <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-50">
@@ -185,7 +186,7 @@ export default function Reader({ highlights, bookId, title }: { highlights: High
       {/* Reader Card */}
       <div className="w-full max-w-2xl px-6 relative flex flex-col items-center h-[60vh] justify-center">
         <AnimatePresence mode="wait" custom={direction}>
-          <motion.div
+          <m.div
             key={current._id}
             custom={direction}
             variants={variants}
@@ -272,7 +273,7 @@ export default function Reader({ highlights, bookId, title }: { highlights: High
                 </div>
               </div>
             )}
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       </div>
 
@@ -312,7 +313,9 @@ export default function Reader({ highlights, bookId, title }: { highlights: High
           </button>
         </div>
         
+        
       </div>
     </div>
+    </LazyMotion>
   );
 }

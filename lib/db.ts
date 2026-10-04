@@ -22,6 +22,10 @@ async function dbConnect() {
   if (cached.conn) {
     return cached.conn;
   }
+  if (mongoose.connection.readyState === 1) {
+    cached.conn = mongoose;
+    return cached.conn;
+  }
 
   if (!cached.promise) {
     const opts = {

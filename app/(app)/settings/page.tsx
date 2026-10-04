@@ -7,6 +7,7 @@ import { revalidatePath } from 'next/cache';
 import { sendDailyDigest } from '@/lib/email';
 import crypto from 'node:crypto';
 import TestEmailButton from '@/components/TestEmailButton';
+import LogoutButton from '@/components/LogoutButton';
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -104,6 +105,14 @@ export default async function SettingsPage() {
             Verify your email configuration by sending a test digest immediately.
           </p>
           <TestEmailButton action={sendTestEmail} />
+        </div>
+
+        <div className="mt-8 pt-8 border-t border-border">
+          <h3 className="text-lg font-serif text-ink mb-2">Account</h3>
+          <p className="text-sm text-muted mb-4">
+            Sign out and clear local offline data from this device.
+          </p>
+          <LogoutButton />
         </div>
       </div>
     </div>

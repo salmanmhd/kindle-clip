@@ -12,6 +12,7 @@ export interface IUser extends Document {
     timezone: string;
   };
   unsubscribeToken: string;
+  lastDailyEmailDate: string | null;
 }
 
 const UserSchema = new Schema<IUser>({
@@ -25,7 +26,8 @@ const UserSchema = new Schema<IUser>({
     dailyEmail: { type: Boolean, default: false },
     timezone: { type: String, default: 'UTC' }
   },
-  unsubscribeToken: { type: String, required: true }
+  unsubscribeToken: { type: String, required: true },
+  lastDailyEmailDate: { type: String, default: null }
 });
 
 export const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);

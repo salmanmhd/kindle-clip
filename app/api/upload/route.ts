@@ -4,6 +4,8 @@ import { processImport } from '@/lib/kindle/import';
 import dbConnect from '@/lib/db';
 import { z } from 'zod';
 
+export const maxDuration = 60;
+
 export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -18,8 +20,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File exceeds 5MB limit' }, { status: 400 });
+    if (file.size > 4 * 1024 * 1024) {
+      return NextResponse.json({ error: 'File exceeds 4MB limit (Vercel serverless limit)' }, { status: 400 });
     }
 
     if (!file.name.endsWith('.txt')) {

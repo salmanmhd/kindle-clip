@@ -13,7 +13,9 @@ export default function OfflineSync() {
 
     const syncData = async () => {
       try {
-        const res = await fetch('/api/sync');
+        const lastSync = localStorage.getItem('lastSyncDate');
+        const query = lastSync ? `?since=${lastSync}` : '';
+        const res = await fetch(`/api/sync${query}`);
         if (!res.ok) return;
 
         const data = await res.json();
@@ -29,9 +31,13 @@ export default function OfflineSync() {
           await db.books.bulkPut(books);
           await db.highlights.bulkPut(highlights);
           
-          // Remove old records that were deleted on the server
-          await db.books.where('syncedAt').below(now).delete();
-          await db.highlights.where('syncedAt').below(now).delete();
+          if (data.deletedHighlightIds?.length > 0) {
+            await db.highlights.bulkDelete(data.deletedHighlightIds);
+          }
+          
+          if (data.timestamp) {
+            localStorage.setItem('lastSyncDate', data.timestamp);
+          }
         });
         
         console.log('Successfully synced data to IndexedDB');

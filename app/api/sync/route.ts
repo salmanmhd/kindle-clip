@@ -11,14 +11,29 @@ export async function GET(req: Request) {
   try {
     await dbConnect();
     
-    // Fetch all books for the user
-    const books = await Book.find({ userId: session.user.id }).lean();
+    const url = new URL(req.url);
+    const updatedSince = url.searchParams.get('since');
     
-    // Fetch all non-deleted highlights for the user
-    const highlights = await Highlight.find({ 
-      userId: session.user.id,
-      deletedAt: null
-    }).lean();
+    let query: any = { userId: session.user.id };
+    if (updatedSince) {
+      query.updatedAt = { $gt: new Date(updatedSince) };
+    }
+    
+    // Fetch books for the user
+    const books = await Book.find(query).lean();
+    
+    // Fetch highlights for the user
+    const highlights = await Highlight.find(query).lean();
+    
+    // Fetch deleted highlights for the user if updatedSince
+    let deletedHighlightIds: string[] = [];
+    if (updatedSince) {
+      const deletedHighlights = await Highlight.find({
+        userId: session.user.id,
+        deletedAt: { $gt: new Date(updatedSince) }
+      }).select('_id').lean();
+      deletedHighlightIds = deletedHighlights.map(h => (h as any)._id.toString());
+    }
 
     return NextResponse.json({
       books: books.map(b => ({
@@ -31,7 +46,9 @@ export async function GET(req: Request) {
         _id: h._id.toString(),
         userId: h.userId.toString(),
         bookId: h.bookId.toString()
-      }))
+      })),
+      deletedHighlightIds,
+      timestamp: new Date().toISOString()
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

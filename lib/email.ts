@@ -10,8 +10,17 @@ export async function sendDailyDigest(email: string, highlights: IHighlight[], u
     return;
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kindle-clip.vercel.app';
   const unsubscribeUrl = `${appUrl}/api/unsubscribe?token=${unsubscribeToken}`;
+
+  const escapeHtml = (unsafe: string) => {
+    return unsafe
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+  };
 
   const htmlContent = `
     <div style="font-family: 'Georgia', serif; max-width: 600px; margin: 0 auto; color: #1C1B19; line-height: 1.6;">
@@ -23,8 +32,8 @@ export async function sendDailyDigest(email: string, highlights: IHighlight[], u
       <div style="margin-bottom: 40px;">
         ${highlights.map(h => `
           <div style="margin-bottom: 30px; padding-bottom: 30px; border-bottom: 1px dashed #E6E1D6;">
-            <p style="font-size: 18px; line-height: 1.7; margin-bottom: 15px;">"${h.text}"</p>
-            ${h.note ? `<p style="font-size: 16px; font-style: italic; color: #8A857B; border-left: 2px solid #E6E1D6; padding-left: 15px;">Note: ${h.note}</p>` : ''}
+            <p style="font-size: 18px; line-height: 1.7; margin-bottom: 15px;">"${escapeHtml(h.text)}"</p>
+            ${h.note ? `<p style="font-size: 16px; font-style: italic; color: #8A857B; border-left: 2px solid #E6E1D6; padding-left: 15px;">Note: ${escapeHtml(h.note)}</p>` : ''}
             <div style="margin-top: 15px;">
               <a href="${appUrl}/books/${h.bookId}" style="color: #B8872E; text-decoration: none; font-family: sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
                 Read in context &rarr;

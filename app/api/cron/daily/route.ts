@@ -6,11 +6,12 @@ import { sendDailyDigest } from '@/lib/email';
 import crypto from 'node:crypto';
 
 export async function GET(req: Request) {
-  // Simple auth for cron: in production, you'd verify the Vercel cron header
-  // const authHeader = req.headers.get('authorization');
-  // if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-  //   return new Response('Unauthorized', { status: 401 });
-  // }
+  if (
+    process.env.CRON_SECRET &&
+    req.headers.get('authorization') !== `Bearer ${process.env.CRON_SECRET}`
+  ) {
+    return new Response('Unauthorized', { status: 401 });
+  }
 
   try {
     await dbConnect();
@@ -30,15 +31,33 @@ export async function GET(req: Request) {
 
       if (randomHighlights.length === 0) continue;
 
+      const today = new Date().toISOString().split('T')[0];
+      if (user.lastDailyEmailDate === today) {
+        continue;
+      }
+
       // Ensure user has an unsubscribe token (create one if missing for backwards compatibility)
       let token = user.unsubscribeToken;
       if (!token) {
         token = crypto.randomBytes(32).toString('hex');
-        await User.updateOne({ _id: user._id }, { $set: { unsubscribeToken: token } });
       }
 
-      await sendDailyDigest(user.email, randomHighlights, token);
-      emailsSent++;
+      try {
+        await sendDailyDigest(user.email, randomHighlights, token);
+        await User.updateOne({ _id: user._id }, { 
+          $set: { 
+            unsubscribeToken: token,
+            lastDailyEmailDate: today 
+          } 
+        });
+        await Highlight.updateMany(
+          { _id: { $in: randomHighlights.map(h => h._id) } },
+          { $set: { emailedAt: new Date() } }
+        );
+        emailsSent++;
+      } catch (err) {
+        console.error(`Failed to send email to ${user.email}`, err);
+      }
     }
 
     return NextResponse.json({ success: true, emailsSent });
