@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Shuffle, Settings, ChevronLeft, ChevronRight, Bookmark } from 'lucide-react';
+import { ArrowLeft, Shuffle, Bookmark } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import ShareButton from '@/components/ShareButton';
 
 interface Highlight {
   _id: string;
@@ -165,13 +166,19 @@ export default function Reader({ highlights, bookId, title }: { highlights: High
           
           <button 
             onClick={toggleShuffle} 
-            className={`transition-colors p-2 -mr-2 ${shuffleMode ? 'text-ink' : 'text-muted hover:text-ink'}`}
+            className={`transition-colors p-2 ${shuffleMode ? 'text-ink' : 'text-muted hover:text-ink'}`}
             title="Shuffle Mode"
             aria-label={shuffleMode ? "Disable shuffle" : "Enable shuffle"}
             aria-pressed={shuffleMode}
           >
             <Shuffle className="w-5 h-5" aria-hidden="true" />
           </button>
+          
+          <ShareButton 
+            text={current.text} 
+            bookTitle={title} 
+            author={null} // We don't have author in Reader props right now, that's fine
+          />
         </div>
       </div>
 
@@ -214,6 +221,7 @@ export default function Reader({ highlights, bookId, title }: { highlights: High
               {current.text}
             </p>
 
+            {current.note && (
               <p 
                 className="mt-8 text-ink/80 font-serif italic text-center select-none border-t border-border pt-8 max-w-md transition-all duration-300"
                 style={{ fontSize: `${Math.max(14, fontSize - 8)}px`, lineHeight }}
