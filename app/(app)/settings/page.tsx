@@ -2,6 +2,7 @@ import { auth } from '@/auth';
 import dbConnect from '@/lib/db';
 import { User } from '@/lib/models/User';
 import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -9,6 +10,22 @@ export default async function SettingsPage() {
 
   await dbConnect();
   const user = await User.findById(session.user.id).lean();
+
+  async function updateSettings(formData: FormData) {
+    'use server';
+    const session = await auth();
+    if (!session?.user?.id) return;
+    
+    await dbConnect();
+    const enabled = formData.get('dailyEmail') === 'on';
+    
+    await User.updateOne(
+      { _id: session.user.id },
+      { $set: { 'settings.dailyEmail': enabled } }
+    );
+    
+    revalidatePath('/settings');
+  }
 
   return (
     <div className="max-w-2xl mx-auto py-12 px-6">
@@ -20,11 +37,12 @@ export default async function SettingsPage() {
           Receive a daily email with 5 random highlights from your library to rediscover past insights.
         </p>
         
-        <form className="space-y-4">
+        <form action={updateSettings} className="space-y-4">
           <div className="flex items-center space-x-3">
             <input 
               type="checkbox" 
               id="email-enabled" 
+              name="dailyEmail"
               className="w-4 h-4 rounded border-border text-ink focus:ring-ink bg-transparent"
               defaultChecked={user?.settings?.dailyEmail ?? false}
             />
@@ -34,7 +52,7 @@ export default async function SettingsPage() {
           </div>
           
           <button 
-            type="button" 
+            type="submit" 
             className="mt-4 bg-ink text-background px-4 py-2 rounded text-sm font-medium hover:bg-ink/90 transition-colors"
           >
             Save preferences
