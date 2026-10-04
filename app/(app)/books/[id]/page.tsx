@@ -50,13 +50,21 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
           <h1 className="text-3xl font-serif text-ink mb-2">{book.title}</h1>
           {book.author && <p className="text-lg text-muted">{book.author}</p>}
         </div>
-        
-        <Link 
-          href={`/books/${resolvedParams.id}/read`}
-          className="inline-flex items-center justify-center bg-ink text-background px-6 py-2 rounded font-sans text-sm hover:bg-ink/90 transition-colors"
-        >
-          Read highlights
-        </Link>
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <Link 
+            href={`/books/${resolvedParams.id}/read`}
+            className="w-full sm:w-auto inline-flex items-center justify-center bg-ink text-background px-6 py-2 rounded font-sans text-sm hover:bg-ink/90 transition-colors"
+          >
+            Read highlights
+          </Link>
+          <a
+            href={`/api/export/${resolvedParams.id}`}
+            download
+            className="w-full sm:w-auto inline-flex items-center justify-center bg-secondary text-ink px-6 py-2 rounded font-sans text-sm hover:bg-secondary/80 transition-colors border border-border"
+          >
+            Export Markdown
+          </a>
+        </div>
       </div>
 
       <HighlightList initialHighlights={safeHighlights} bookId={resolvedParams.id} />

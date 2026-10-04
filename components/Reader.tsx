@@ -25,6 +25,10 @@ export default function Reader({ highlights, bookId, title }: { highlights: High
   // Font controls
   const [fontSize, setFontSize] = useState(24);
   const [lineHeight, setLineHeight] = useState(1.6);
+  
+  // Note editing
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingNote, setEditingNote] = useState('');
 
   // Sync with local storage
   useEffect(() => {
@@ -88,6 +92,27 @@ export default function Reader({ highlights, bookId, title }: { highlights: High
   }
 
   const current = displayList[currentIndex];
+  
+  const saveNote = async () => {
+    try {
+      const res = await fetch(`/api/highlights/${current._id}/note`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ note: editingNote })
+      });
+      if (res.ok) {
+        const newList = [...displayList];
+        newList[currentIndex] = { ...newList[currentIndex], note: editingNote };
+        setDisplayList(newList);
+        setIsEditing(false);
+        toast.success('Note saved');
+      } else {
+        toast.error('Failed to save note');
+      }
+    } catch (error) {
+      toast.error('Error saving note');
+    }
+  };
 
   const variants = {
     enter: (direction: number) => ({
@@ -189,15 +214,56 @@ export default function Reader({ highlights, bookId, title }: { highlights: High
               {current.text}
             </p>
 
-            {current.note && (
               <p 
                 className="mt-8 text-ink/80 font-serif italic text-center select-none border-t border-border pt-8 max-w-md transition-all duration-300"
                 style={{ fontSize: `${Math.max(14, fontSize - 8)}px`, lineHeight }}
+                onDoubleClick={() => {
+                  setEditingNote(current.note || '');
+                  setIsEditing(true);
+                }}
               >
                 {current.note}
               </p>
             )}
 
+            {!current.note && !isEditing && (
+              <button 
+                onClick={() => {
+                  setEditingNote('');
+                  setIsEditing(true);
+                }}
+                className="mt-8 text-xs uppercase tracking-widest text-muted hover:text-ink transition-colors font-sans"
+              >
+                + Add Note
+              </button>
+            )}
+
+            {isEditing && (
+              <div className="mt-8 w-full max-w-md" onPointerDownCapture={(e) => e.stopPropagation()}>
+                <textarea
+                  value={editingNote}
+                  onChange={(e) => setEditingNote(e.target.value)}
+                  className="w-full bg-secondary/30 border border-border rounded p-3 text-ink font-serif focus:ring-1 focus:ring-ink focus:outline-none resize-none"
+                  rows={3}
+                  placeholder="Type your note here..."
+                  autoFocus
+                />
+                <div className="flex justify-end space-x-2 mt-2">
+                  <button 
+                    onClick={() => setIsEditing(false)}
+                    className="text-xs font-sans uppercase tracking-widest text-muted hover:text-ink px-2 py-1"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={saveNote}
+                    className="text-xs font-sans uppercase tracking-widest bg-ink text-background hover:bg-ink/90 px-3 py-1 rounded"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
       </div>
