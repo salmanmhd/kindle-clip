@@ -57,12 +57,13 @@ export default async function LibraryPage() {
           <h2 className="text-sm font-sans uppercase tracking-widest text-muted mb-6">Your Library</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {books.map(b => (
-              <div 
+              <Link 
                 key={b._id.toString()}
-                className="group flex flex-col bg-card/30 border border-border rounded-xl p-6 hover:bg-secondary/20 transition-all hover:shadow-sm"
+                href={`/books/${b._id.toString()}/read`}
+                className="group flex flex-col bg-card/30 border border-border rounded-xl p-6 hover:bg-secondary/20 transition-all hover:-translate-y-1 hover:shadow-sm"
               >
                 <div className="aspect-[2/3] w-full bg-gradient-to-br from-secondary/50 to-background rounded-lg border border-border mb-4 flex flex-col items-center justify-center p-4 text-center">
-                  <h3 className="font-serif text-ink font-medium leading-snug line-clamp-3">
+                  <h3 className="font-serif text-ink font-medium leading-snug line-clamp-3 group-hover:text-ink/80 transition-colors">
                     {b.title}
                   </h3>
                 </div>
@@ -71,21 +72,12 @@ export default async function LibraryPage() {
                   {b.author && (
                     <p className="text-xs font-sans text-muted mb-3 truncate">{b.author}</p>
                   )}
-                  <div className="flex items-center space-x-1 text-xs text-muted/80 font-sans mb-4">
+                  <div className="flex items-center space-x-1 text-xs text-muted/80 font-sans mt-auto">
                     <span>{b.highlightCount}</span>
                     <span>highlights</span>
                   </div>
                 </div>
-
-                <div className="flex items-center space-x-2 mt-auto pt-4 border-t border-border">
-                  <Link href={`/books/${b._id.toString()}/read`} className="flex-1 bg-ink text-background text-center py-2 rounded text-xs font-medium uppercase tracking-widest hover:bg-ink/90 transition-colors">
-                    Read
-                  </Link>
-                  <Link href={`/books/${b._id.toString()}`} className="flex-1 bg-secondary text-ink text-center py-2 rounded text-xs font-medium uppercase tracking-widest hover:bg-secondary/80 transition-colors">
-                    List
-                  </Link>
-                </div>
-              </div>
+              </Link>
             ))}
           </div>
         </>

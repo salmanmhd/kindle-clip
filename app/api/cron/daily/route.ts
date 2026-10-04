@@ -24,7 +24,7 @@ export async function GET(req: Request) {
       // Find 5 random highlights for this user
       // We use aggregation pipeline $sample
       const randomHighlights = await Highlight.aggregate([
-        { $match: { userId: user._id.toString(), deletedAt: null } },
+        { $match: { userId: user._id, deletedAt: null } },
         { $sample: { size: 5 } }
       ]);
 

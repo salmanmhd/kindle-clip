@@ -45,7 +45,7 @@ export default async function SettingsPage() {
     }
 
     const randomHighlights = await Highlight.aggregate([
-      { $match: { userId: user._id.toString(), deletedAt: null } },
+      { $match: { userId: user._id, deletedAt: null } },
       { $sample: { size: 1 } }
     ]);
     
