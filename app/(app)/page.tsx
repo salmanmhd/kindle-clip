@@ -2,7 +2,9 @@ import { auth } from '@/auth';
 import { Book } from '@/lib/models/Book';
 import dbConnect from '@/lib/db';
 import Link from 'next/link';
-
+import ThemeToggle from '@/components/ThemeToggle';
+import { LogOut, Upload } from 'lucide-react';
+import { signOut } from '@/auth';
 
 export default async function LibraryPage() {
   const session = await auth();
@@ -18,14 +20,26 @@ export default async function LibraryPage() {
     <div className="max-w-3xl mx-auto py-12 px-4 sm:px-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
       
       {/* Top area */}
-      <div className="mb-12 flex items-center justify-between">
+      <div className="mb-12 flex items-start justify-between">
         <div>
           <h1 className="text-sm font-sans text-muted mb-1">Continue reading</h1>
           <p className="text-ink font-serif text-lg">You don't have any recent activity yet.</p>
         </div>
-        <Link href="/upload" className="text-sm text-ink underline underline-offset-4 hover:text-muted transition-colors">
-          Upload clippings
-        </Link>
+        <div className="flex flex-col items-end space-y-4">
+          <ThemeToggle />
+          <div className="flex items-center space-x-4">
+            <Link href="/upload" className="flex items-center space-x-1 text-sm text-ink hover:text-muted transition-colors">
+              <Upload className="w-4 h-4" />
+              <span>Upload</span>
+            </Link>
+            <form action={async () => { 'use server'; await signOut(); }}>
+              <button className="flex items-center space-x-1 text-sm text-muted hover:text-ink transition-colors">
+                <LogOut className="w-4 h-4" />
+                <span>Log out</span>
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
 
       {books.length === 0 ? (

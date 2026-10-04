@@ -45,9 +45,18 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
         <span>Library</span>
       </Link>
 
-      <div className="mb-16">
-        <h1 className="text-3xl font-serif text-ink mb-2">{book.title}</h1>
-        {book.author && <p className="text-lg text-muted">{book.author}</p>}
+      <div className="mb-16 flex flex-col sm:flex-row sm:items-end justify-between space-y-6 sm:space-y-0">
+        <div>
+          <h1 className="text-3xl font-serif text-ink mb-2">{book.title}</h1>
+          {book.author && <p className="text-lg text-muted">{book.author}</p>}
+        </div>
+        
+        <Link 
+          href={`/books/${resolvedParams.id}/read`}
+          className="inline-flex items-center justify-center bg-ink text-background px-6 py-2 rounded font-sans text-sm hover:bg-ink/90 transition-colors"
+        >
+          Read highlights
+        </Link>
       </div>
 
       <HighlightList initialHighlights={safeHighlights} bookId={resolvedParams.id} />

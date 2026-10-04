@@ -1,6 +1,8 @@
 import { Instrument_Sans, Literata, Noto_Serif_Devanagari, Noto_Naskh_Arabic } from "next/font/google"
 import "./globals.css"
 import { cn } from "@/lib/utils"
+import { ThemeProvider } from "@/components/ThemeProvider"
+import { Toaster } from "sonner"
 
 const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
@@ -44,7 +46,7 @@ export default function RootLayout({
       lang="en"
       suppressHydrationWarning
       className={cn(
-        "antialiased theme-paper", 
+        "antialiased", 
         instrumentSans.variable, 
         literata.variable, 
         notodevanagari.variable, 
@@ -58,7 +60,15 @@ export default function RootLayout({
             --font-serif-stack: var(--font-serif), var(--font-devanagari), var(--font-arabic), serif;
           }
         `}} />
-        {children}
+        <ThemeProvider attribute="class" defaultTheme="paper" themes={['paper', 'sepia', 'night']} disableTransitionOnChange>
+          {children}
+          <Toaster 
+            position="bottom-center"
+            toastOptions={{
+              className: 'bg-popover text-ink border-border font-sans',
+            }}
+          />
+        </ThemeProvider>
       </body>
     </html>
   )
