@@ -111,7 +111,10 @@ export async function processImport(
 
     const titleKey = normalizeTitle(e.title);
     const bookId = booksData.get(titleKey)!.bookId;
-    const existingList = highlightsByBook.get(bookId) || [];
+    if (!highlightsByBook.has(bookId)) {
+      highlightsByBook.set(bookId, []);
+    }
+    const existingList = highlightsByBook.get(bookId)!;
 
     if (e.type === 'note') {
       // Find matching highlight whose location contains or ends at note loc
@@ -185,9 +188,10 @@ export async function processImport(
     // 2. Overlap match
     let merged = false;
     for (const h of existingList) {
-      // Check overlap
-      if (h.kind === 'highlight' && Math.max(h.locStart, e.locStart) <= Math.min(h.locEnd, e.locEnd)) {
-        if (h.normText.includes(normText) || normText.includes(h.normText)) {
+      if (h.kind === 'highlight') {
+        const overlap = Math.max(h.locStart, e.locStart) <= Math.min(h.locEnd, e.locEnd);
+        if (overlap) {
+           if (h.normText.includes(normText) || normText.includes(h.normText)) {
           // One contains the other
           if (normText.length > h.normText.length) {
             if (h.deletedAt) {
@@ -230,6 +234,7 @@ export async function processImport(
             merged = true;
             break;
           }
+        }
         }
       }
     }

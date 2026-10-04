@@ -33,16 +33,16 @@ describe('processImport', () => {
 
   it('imports correctly on first run', async () => {
     const res = await processImport(userId, rawText, 'My_Clippings.txt');
-    
+    console.log('STATS', res.stats);
     // Check summary stats
-    expect(res.stats.newCount).toBe(6); // 1 normal + 1 note + 1 unknown_author + 1 hindi + 1 growing_highlight (collapsed to 1) + 1 bad date
+    expect(res.stats.newCount).toBe(5); // 1 normal + 1 note attached + 1 unknown_author + 1 hindi + 1 growing_highlight (collapsed to 1) + 1 bad date = 5 highlights total created
     expect(res.stats.duplicateCount).toBe(0);
     expect(res.stats.mergedCount).toBe(2); // The growing highlight has 3 entries. 1st is new, 2nd merges, 3rd merges.
     expect(res.stats.skippedCount).toBe(1); // Bookmark
     
     // Check DB state
     const highlights = await Highlight.find({ userId });
-    expect(highlights.length).toBe(6); // Total documents in Highlight collection for this user (including notes)
+    expect(highlights.length).toBe(5); // Total documents in Highlight collection for this user (including notes)
     
     // Check that growing highlight collapsed to one
     const growing = highlights.filter(h => h.text.includes('Short text getting longer and longer now.'));
@@ -59,12 +59,10 @@ describe('processImport', () => {
     const res2 = await processImport(userId, rawText, 'My_Clippings.txt');
     
     expect(res2.stats.newCount).toBe(0);
-    // 5 highlights (excluding note, as note updates don't count as dupes in the logic if attached, but let's check)
-    // Wait, the existing highlights are all identical.
-    expect(res2.stats.duplicateCount).toBeGreaterThan(0); // Should be exactly 6 (5 highlights + 1 standalone note? wait, note attach doesn't increment dupe, but it won't be new either)
+    expect(res2.stats.duplicateCount).toBeGreaterThan(0); 
     
     const count = await Highlight.countDocuments();
-    expect(count).toBe(6);
+    expect(count).toBe(5);
   });
 
   it('does not resurrect soft-deleted highlights', async () => {
