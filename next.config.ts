@@ -10,6 +10,8 @@ const withPWA = withPWAInit({
   disable: process.env.NODE_ENV === 'development', // don't cache in dev
 });
 
-const nextConfig: NextConfig = {}
+const nextConfig: NextConfig = {
+  turbopack: {},
+}
 
 export default withPWA(nextConfig);
