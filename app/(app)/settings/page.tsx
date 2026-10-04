@@ -1,8 +1,11 @@
 import { auth } from '@/auth';
 import dbConnect from '@/lib/db';
 import { User } from '@/lib/models/User';
+import { Highlight } from '@/lib/models/Highlight';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
+import { sendDailyDigest } from '@/lib/email';
+import crypto from 'node:crypto';
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -25,6 +28,32 @@ export default async function SettingsPage() {
     );
     
     revalidatePath('/settings');
+  }
+
+  async function sendTestEmail() {
+    'use server';
+    const session = await auth();
+    if (!session?.user?.id) return;
+    
+    await dbConnect();
+    const user = await User.findById(session.user.id);
+    if (!user) return;
+    
+    const randomHighlights = await Highlight.aggregate([
+      { $match: { userId: user._id.toString(), deletedAt: null } },
+      { $sample: { size: 1 } }
+    ]);
+    
+    if (randomHighlights.length === 0) return;
+    
+    let token = user.unsubscribeToken;
+    if (!token) {
+      token = crypto.randomBytes(32).toString('hex');
+      user.unsubscribeToken = token;
+      await user.save();
+    }
+    
+    await sendDailyDigest(user.email, randomHighlights, token);
   }
 
   return (
@@ -58,6 +87,21 @@ export default async function SettingsPage() {
             Save preferences
           </button>
         </form>
+        
+        <div className="mt-8 pt-8 border-t border-border">
+          <h3 className="text-lg font-serif text-ink mb-2">Test Delivery</h3>
+          <p className="text-sm text-muted mb-4">
+            Verify your email configuration by sending a test digest immediately.
+          </p>
+          <form action={sendTestEmail}>
+            <button 
+              type="submit" 
+              className="bg-secondary text-ink px-4 py-2 rounded text-sm font-medium hover:bg-secondary/80 transition-colors border border-border"
+            >
+              Send test email now
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

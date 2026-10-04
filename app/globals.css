@@ -30,26 +30,26 @@
 }
 
 .sepia {
-  --background: #F4F0E6;
+  --background: #F5F0E1;
   --foreground: #4A3E35;
-  --muted: #9E9389;
-  --muted-foreground: #9E9389;
-  --border: #E6E2DA;
+  --muted: #A3998B;
+  --muted-foreground: #A3998B;
+  --border: #DFD7C2;
   --accent: #4A3E35;
-  --accent-foreground: #F4F0E6;
+  --accent-foreground: #F5F0E1;
   --star: #B8872E;
   
-  --card: #F4F0E6;
+  --card: #F5F0E1;
   --card-foreground: #4A3E35;
-  --popover: #F4F0E6;
+  --popover: #F5F0E1;
   --popover-foreground: #4A3E35;
   --primary: #4A3E35;
-  --primary-foreground: #F4F0E6;
-  --secondary: #E6E2DA;
+  --primary-foreground: #F5F0E1;
+  --secondary: #DFD7C2;
   --secondary-foreground: #4A3E35;
   --destructive: #cc0000;
-  --destructive-foreground: #F4F0E6;
-  --input: #E6E2DA;
+  --destructive-foreground: #F5F0E1;
+  --input: #DFD7C2;
   --ring: #4A3E35;
   --radius: 0.25rem;
 }
