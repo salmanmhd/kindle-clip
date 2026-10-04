@@ -47,7 +47,7 @@ export async function sendDailyDigest(email: string, highlights: IHighlight[], u
 
   try {
     await resend.emails.send({
-      from: 'Kindle Clipper <digest@kindleclipper.com>', // You would need a verified domain in Resend
+      from: 'Kindle Clipper <onboarding@resend.dev>', // Using Resend testing domain
       to: email,
       subject: 'Your Kindle Highlights - Daily Digest',
       html: htmlContent,
