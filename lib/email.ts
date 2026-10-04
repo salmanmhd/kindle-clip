@@ -54,15 +54,27 @@ export async function sendDailyDigest(email: string, highlights: IHighlight[], u
     </div>
   `;
 
+  const fromAddress = process.env.MAIL_FROM
+    ? (process.env.MAIL_FROM.includes('<') ? process.env.MAIL_FROM : `Kindle Clipper <${process.env.MAIL_FROM}>`)
+    : 'Kindle Clipper <onboarding@resend.dev>';
+
   try {
-    await resend.emails.send({
-      from: 'Kindle Clipper <onboarding@resend.dev>', // Using Resend testing domain
+    const result = await resend.emails.send({
+      from: fromAddress,
       to: email,
       subject: 'Your Kindle Highlights - Daily Digest',
       html: htmlContent,
     });
+
+    if (result.error) {
+      console.error('Failed to send email via Resend:', result.error);
+      throw new Error(result.error.message || 'Failed to send email via Resend');
+    }
+
     console.log(`Successfully sent digest to ${email}`);
-  } catch (error) {
+    return result.data;
+  } catch (error: any) {
     console.error('Failed to send email:', error);
+    throw error;
   }
 }
