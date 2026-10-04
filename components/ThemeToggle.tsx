@@ -22,25 +22,22 @@ export default function ThemeToggle() {
     { id: 'night', icon: Moon, label: 'Night' },
   ];
 
+  const currentIndex = themes.findIndex(t => t.id === theme);
+  const currentTheme = themes[currentIndex !== -1 ? currentIndex : 0];
+
+  const cycleTheme = () => {
+    const nextIndex = (currentIndex + 1) % themes.length;
+    setTheme(themes[nextIndex].id);
+  };
+
   return (
-    <div className="flex items-center space-x-1 border border-border rounded-full p-1 bg-popover shadow-sm">
-      {themes.map(t => (
-        <button
-          key={t.id}
-          onClick={() => setTheme(t.id)}
-          className={`
-            w-9 h-9 rounded-full flex items-center justify-center transition-all
-            ${theme === t.id ? 'ring-2 ring-ink ring-offset-1 ring-offset-background' : 'opacity-70 hover:opacity-100'}
-            ${t.id === 'paper' ? 'bg-[#f7f5f0] text-[#3d3835]' : ''}
-            ${t.id === 'sepia' ? 'bg-[#f4ecd8] text-[#5b4636]' : ''}
-            ${t.id === 'night' ? 'bg-[#1a1b1e] text-[#d1d5db]' : ''}
-          `}
-          title={`${t.label} Mode`}
-          aria-label={`${t.label} Mode`}
-        >
-          <t.icon className="w-4 h-4" />
-        </button>
-      ))}
-    </div>
+    <button
+      onClick={cycleTheme}
+      className="w-8 h-8 flex items-center justify-center rounded-full text-ink/70 hover:text-ink hover:bg-secondary/50 transition-all focus:outline-none"
+      title={`Current: ${currentTheme.label} Mode (Click to cycle)`}
+      aria-label="Toggle reading theme"
+    >
+      <currentTheme.icon className="w-4 h-4" />
+    </button>
   );
 }
