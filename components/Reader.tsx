@@ -95,7 +95,7 @@ export default function Reader({ highlights, bookId, title }: { highlights: High
     <div className="min-h-screen bg-background flex flex-col items-center justify-center overflow-hidden selection:bg-muted/30">
       
       {/* Minimalist Top Nav */}
-      <div className="fixed top-0 left-0 right-0 p-6 flex justify-between items-center z-50">
+      <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-50">
         <Link 
           href={`/books/${bookId}`} 
           className="flex items-center space-x-2 text-muted hover:text-ink transition-colors group"
@@ -165,7 +165,7 @@ export default function Reader({ highlights, bookId, title }: { highlights: High
       </div>
 
       {/* Minimalist Bottom Nav */}
-      <div className="fixed bottom-0 left-0 right-0 p-8 sm:p-12 flex justify-between items-end z-50 pointer-events-none">
+      <div className="absolute bottom-0 left-0 right-0 p-8 sm:p-12 flex justify-between items-end z-50 pointer-events-none">
         
         <div className="flex flex-col space-y-1">
           <span className="text-muted/60 font-sans text-xs uppercase tracking-widest">{title}</span>

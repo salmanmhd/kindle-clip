@@ -4,6 +4,7 @@ import { Highlight } from '@/lib/models/Highlight';
 import dbConnect from '@/lib/db';
 import Link from 'next/link';
 import { BookOpen, ScrollText } from 'lucide-react';
+import DashboardRandomHighlight from '@/components/DashboardRandomHighlight';
 
 export default async function LibraryPage() {
   const session = await auth();
@@ -44,6 +45,8 @@ export default async function LibraryPage() {
           </div>
         </div>
       </div>
+
+      <DashboardRandomHighlight />
 
       {books.length === 0 ? (
         <div className="text-center py-20 border border-dashed border-border rounded-xl">

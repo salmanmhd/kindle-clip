@@ -63,7 +63,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 md:ml-64 pb-20 md:pb-0 min-h-screen">
+      <main className="flex-1 md:ml-64 pb-20 md:pb-0 min-h-screen relative">
         <div className="md:hidden flex items-center justify-between p-4 border-b border-border bg-card/30 backdrop-blur-md">
           <div className="flex items-center space-x-2">
             <div className="w-6 h-6 rounded-full bg-ink text-background flex items-center justify-center">

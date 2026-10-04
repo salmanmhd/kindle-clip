@@ -117,10 +117,14 @@ export async function processImport(
     const existingList = highlightsByBook.get(bookId)!;
 
     if (e.type === 'note') {
-      // Find matching highlight whose location contains or ends at note loc
+      // Find matching highlight whose location is within 15 units of note loc
       const target = existingList.find(h => 
         h.kind === 'highlight' && 
-        e.locStart >= h.locStart && e.locStart <= h.locEnd
+        (
+          (e.locStart >= h.locStart && e.locStart <= h.locEnd) || 
+          Math.abs(e.locStart - h.locEnd) <= 15 || 
+          Math.abs(e.locStart - h.locStart) <= 15
+        )
       );
       if (target) {
         if (!target.deletedAt) {

@@ -4,7 +4,7 @@
 
 @custom-variant dark (&:is(.theme-night *));
 
-:root, .theme-paper {
+:root, .paper {
   --background: #FBF9F4;
   --foreground: #1C1B19;
   --muted: #8A857B;
@@ -29,7 +29,7 @@
   --radius: 0.25rem; /* 4px max */
 }
 
-.theme-sepia {
+.sepia {
   --background: #F4ECD8;
   --foreground: #3F3224;
   --muted: #8C7B63;
@@ -54,7 +54,7 @@
   --radius: 0.25rem;
 }
 
-.theme-night {
+.night {
   --background: #121212;
   --foreground: #D8D4CB;
   --muted: #7C786F;
