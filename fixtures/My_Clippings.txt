@@ -1,0 +1,45 @@
+﻿Book Title (Author Name)
+- Your Highlight on page 6 | location 78-79 | Added on Saturday, 18 November 2023 10:58:06
+
+The highlighted text, possibly spanning several lines.
+==========
+﻿Book Title (Author Name)
+- Your Note on page 6 | location 79 | Added on Saturday, 18 November 2023 10:59:06
+
+This is a note attached to the highlight.
+==========
+Another Book (Unknown)
+- Your Highlight at location 135 | Added on Monday, 20 November 2023 12:00:00
+
+Highlight without page and unknown author.
+==========
+Third Book (Hindi Edition) (Divya Prakash Dubey)
+- Your Highlight on page 10 | location 200-201 | Added on Tuesday, 21 November 2023 14:00:00
+
+Some Hindi text: नमस्ते दुनिया
+==========
+Growing Highlight Book (Author)
+- Your Highlight on page 1 | location 140-142 | Added on Wednesday, 22 November 2023 10:00:00
+
+Short text
+==========
+Growing Highlight Book (Author)
+- Your Highlight on page 1 | location 140-142 | Added on Wednesday, 22 November 2023 10:01:00
+
+Short text getting longer
+==========
+Growing Highlight Book (Author)
+- Your Highlight on page 1 | location 140-142 | Added on Wednesday, 22 November 2023 10:02:00
+
+Short text getting longer and longer now.
+==========
+Skip Book (Skip Author)
+- Your Bookmark on page 5 | location 100 | Added on Thursday, 23 November 2023 09:00:00
+
+
+==========
+Bad Date Book (Author)
+- Your Highlight on page 1 | location 10-11 | Added on Blah Blah
+
+This has a bad date.
+==========
