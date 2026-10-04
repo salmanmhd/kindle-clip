@@ -1,7 +1,9 @@
 import { ReactNode } from 'react';
 import Link from 'next/link';
+import { Library, Star, Search, Settings, Upload, User, BookOpen } from 'lucide-react';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
+import ThemeToggle from '@/components/ThemeToggle';
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const session = await auth();
@@ -11,33 +13,83 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex">
       {/* Desktop/Tablet Navigation */}
-      <nav className="hidden md:flex flex-col fixed inset-y-0 left-0 w-64 border-r border-border p-6 space-y-8">
-        <div className="text-ink font-serif text-xl tracking-tight">Kindle Clipper</div>
-        <div className="flex flex-col space-y-4">
-          <Link href="/" className="text-ink hover:text-muted transition-colors">Library</Link>
-          <Link href="/read" className="text-ink hover:text-muted transition-colors">Read</Link>
-          <Link href="/favourites" className="text-ink hover:text-muted transition-colors">Favourites</Link>
-          <Link href="/search" className="text-ink hover:text-muted transition-colors">Search</Link>
+      <nav className="hidden md:flex flex-col fixed inset-y-0 left-0 w-64 border-r border-border bg-card/30 backdrop-blur-md p-6">
+        <div className="text-ink font-serif text-2xl tracking-tight font-semibold mb-12 flex items-center space-x-3">
+          <div className="w-8 h-8 rounded-full bg-ink text-background flex items-center justify-center">
+            <BookOpen className="w-4 h-4" />
+          </div>
+          <span>Kindle Clipper</span>
         </div>
-        <div className="mt-auto">
-          <Link href="/upload" className="text-sm text-muted hover:text-ink transition-colors block mb-4">Upload clippings</Link>
-          <Link href="/settings" className="text-sm text-muted hover:text-ink transition-colors">Settings</Link>
+        
+        <div className="flex flex-col space-y-2">
+          <p className="text-xs font-sans uppercase tracking-widest text-muted mb-2 px-3">Menu</p>
+          <Link href="/" className="flex items-center space-x-3 text-ink/80 hover:text-ink hover:bg-secondary/50 px-3 py-2.5 rounded-lg transition-all font-medium">
+            <Library className="w-5 h-5" />
+            <span>Library</span>
+          </Link>
+          <Link href="/favourites" className="flex items-center space-x-3 text-ink/80 hover:text-ink hover:bg-secondary/50 px-3 py-2.5 rounded-lg transition-all font-medium">
+            <Star className="w-5 h-5" />
+            <span>Favourites</span>
+          </Link>
+          <Link href="/search" className="flex items-center space-x-3 text-ink/80 hover:text-ink hover:bg-secondary/50 px-3 py-2.5 rounded-lg transition-all font-medium">
+            <Search className="w-5 h-5" />
+            <span>Search</span>
+          </Link>
+        </div>
+        
+        <div className="mt-auto flex flex-col space-y-2">
+          <Link href="/upload" className="flex items-center space-x-3 text-ink/80 hover:text-ink hover:bg-secondary/50 px-3 py-2.5 rounded-lg transition-all font-medium">
+            <Upload className="w-5 h-5" />
+            <span>Upload clippings</span>
+          </Link>
+          <Link href="/settings" className="flex items-center space-x-3 text-ink/80 hover:text-ink hover:bg-secondary/50 px-3 py-2.5 rounded-lg transition-all font-medium">
+            <Settings className="w-5 h-5" />
+            <span>Settings</span>
+          </Link>
+          
+          <div className="pt-2 px-3 pb-2">
+            <ThemeToggle />
+          </div>
+
+          <div className="border-t border-border mt-2 pt-4 px-3 flex items-center space-x-3 text-ink">
+            <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
+              <User className="w-4 h-4 text-muted" />
+            </div>
+            <span className="font-medium text-sm truncate">{session.user?.email}</span>
+          </div>
         </div>
       </nav>
 
       {/* Main Content */}
-      <main className="md:ml-64 pb-20 md:pb-0 min-h-screen">
+      <main className="flex-1 md:ml-64 pb-20 md:pb-0 min-h-screen">
+        <div className="md:hidden flex items-center justify-between p-4 border-b border-border bg-card/30 backdrop-blur-md">
+          <div className="flex items-center space-x-2">
+            <div className="w-6 h-6 rounded-full bg-ink text-background flex items-center justify-center">
+              <BookOpen className="w-3 h-3" />
+            </div>
+            <span className="font-serif font-medium text-ink tracking-tight">Kindle Clipper</span>
+          </div>
+          <ThemeToggle />
+        </div>
         {children}
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 bg-background border-t border-border flex justify-around items-center h-14 z-50">
-        <Link href="/" className="text-sm text-ink px-4 py-2 hover:bg-secondary/50 rounded transition-colors">Library</Link>
-        <Link href="/read" className="text-sm text-ink px-4 py-2 hover:bg-secondary/50 rounded transition-colors">Read</Link>
-        <Link href="/favourites" className="text-sm text-ink px-4 py-2 hover:bg-secondary/50 rounded transition-colors">Starred</Link>
-        <Link href="/search" className="text-sm text-ink px-4 py-2 hover:bg-secondary/50 rounded transition-colors">Search</Link>
+      <nav className="md:hidden fixed bottom-0 inset-x-0 bg-card/80 backdrop-blur-md border-t border-border flex justify-around items-center h-16 z-50">
+        <Link href="/" className="flex flex-col items-center text-ink/80 hover:text-ink transition-colors p-2">
+          <Library className="w-5 h-5 mb-1" />
+          <span className="text-[10px] font-medium">Library</span>
+        </Link>
+        <Link href="/favourites" className="flex flex-col items-center text-ink/80 hover:text-ink transition-colors p-2">
+          <Star className="w-5 h-5 mb-1" />
+          <span className="text-[10px] font-medium">Starred</span>
+        </Link>
+        <Link href="/search" className="flex flex-col items-center text-ink/80 hover:text-ink transition-colors p-2">
+          <Search className="w-5 h-5 mb-1" />
+          <span className="text-[10px] font-medium">Search</span>
+        </Link>
       </nav>
     </div>
   );

@@ -1,10 +1,9 @@
 import { auth } from '@/auth';
 import { Book } from '@/lib/models/Book';
+import { Highlight } from '@/lib/models/Highlight';
 import dbConnect from '@/lib/db';
 import Link from 'next/link';
-import ThemeToggle from '@/components/ThemeToggle';
-import { LogOut, Upload, Search as SearchIcon } from 'lucide-react';
-import { signOut } from '@/auth';
+import { BookOpen, ScrollText } from 'lucide-react';
 
 export default async function LibraryPage() {
   const session = await auth();
@@ -16,62 +15,68 @@ export default async function LibraryPage() {
     .sort({ highlightCount: -1 })
     .lean();
 
+  const totalHighlights = await Highlight.countDocuments({ 
+    userId: session?.user?.id, 
+    deletedAt: null 
+  });
+
   return (
-    <div className="max-w-3xl mx-auto py-12 px-4 sm:px-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div className="max-w-5xl mx-auto py-12 px-6 lg:px-12 animate-in fade-in slide-in-from-bottom-2 duration-300">
       
-      {/* Top area */}
-      <div className="mb-12 flex items-start justify-between">
-        <div>
-          <h1 className="text-sm font-sans text-muted mb-1">Continue reading</h1>
-          <p className="text-ink font-serif text-lg">You don't have any recent activity yet.</p>
-        </div>
-        <div className="flex flex-col items-end space-y-4">
-          <ThemeToggle />
-          <div className="flex items-center space-x-4">
-            <Link href="/search" className="flex items-center space-x-1 text-sm text-ink hover:text-muted transition-colors" aria-label="Search">
-              <SearchIcon className="w-4 h-4" aria-hidden="true" />
-              <span className="hidden sm:inline">Search</span>
-            </Link>
-            <Link href="/upload" className="flex items-center space-x-1 text-sm text-ink hover:text-muted transition-colors" aria-label="Upload clippings">
-              <Upload className="w-4 h-4" aria-hidden="true" />
-              <span className="hidden sm:inline">Upload</span>
-            </Link>
-            <form action={async () => { 'use server'; await signOut(); }}>
-              <button type="submit" className="flex items-center space-x-1 text-sm text-muted hover:text-ink transition-colors" aria-label="Log out">
-                <LogOut className="w-4 h-4" aria-hidden="true" />
-                <span className="hidden sm:inline">Log out</span>
-              </button>
-            </form>
+      {/* Header & Stats */}
+      <div className="mb-16">
+        <h1 className="text-3xl font-serif text-ink mb-8">Dashboard</h1>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-card/30 border border-border rounded-xl p-6 flex flex-col justify-between h-32 backdrop-blur-md">
+            <BookOpen className="w-5 h-5 text-muted" />
+            <div>
+              <p className="text-2xl font-serif text-ink">{books.length}</p>
+              <p className="text-xs font-sans uppercase tracking-widest text-muted mt-1">Books</p>
+            </div>
+          </div>
+          <div className="bg-card/30 border border-border rounded-xl p-6 flex flex-col justify-between h-32 backdrop-blur-md">
+            <ScrollText className="w-5 h-5 text-muted" />
+            <div>
+              <p className="text-2xl font-serif text-ink">{totalHighlights}</p>
+              <p className="text-xs font-sans uppercase tracking-widest text-muted mt-1">Highlights</p>
+            </div>
           </div>
         </div>
       </div>
 
       {books.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-muted">Nothing here yet. Upload your clippings to begin.</p>
+        <div className="text-center py-20 border border-dashed border-border rounded-xl">
+          <p className="text-muted font-serif">Nothing here yet. Upload your clippings to begin.</p>
         </div>
       ) : (
-        <ul className="space-y-4">
-          {books.map(b => (
-            <li key={b._id.toString()}>
-              <Link href={`/books/${b._id.toString()}`} className="group flex justify-between items-baseline py-2 border-b border-transparent hover:border-border transition-colors">
-                <div className="flex items-baseline space-x-3">
-                  <span className="font-serif text-lg text-ink group-hover:text-ink/80 transition-colors">
+        <>
+          <h2 className="text-sm font-sans uppercase tracking-widest text-muted mb-6">Your Library</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {books.map(b => (
+              <Link 
+                key={b._id.toString()}
+                href={`/books/${b._id.toString()}`} 
+                className="group block bg-card/30 border border-border rounded-xl p-6 hover:bg-secondary/20 transition-all hover:-translate-y-1 hover:shadow-sm"
+              >
+                <div className="aspect-[2/3] w-full bg-gradient-to-br from-secondary/50 to-background rounded-lg border border-border mb-4 flex flex-col items-center justify-center p-4 text-center">
+                  <h3 className="font-serif text-ink font-medium leading-snug line-clamp-3 group-hover:text-ink/80 transition-colors">
                     {b.title}
-                  </span>
-                  {b.author && (
-                    <span className="text-sm text-muted">
-                      {b.author}
-                    </span>
-                  )}
+                  </h3>
                 </div>
-                <div className="text-sm text-muted shrink-0 ml-4">
-                  {b.highlightCount}
+                
+                {b.author && (
+                  <p className="text-xs font-sans text-muted mb-3 truncate">{b.author}</p>
+                )}
+                
+                <div className="flex items-center space-x-1 text-xs text-muted/80 font-sans">
+                  <span>{b.highlightCount}</span>
+                  <span>highlights</span>
                 </div>
               </Link>
-            </li>
-          ))}
-        </ul>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
