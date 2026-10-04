@@ -3,7 +3,7 @@ import { Book } from '@/lib/models/Book';
 import dbConnect from '@/lib/db';
 import Link from 'next/link';
 import ThemeToggle from '@/components/ThemeToggle';
-import { LogOut, Upload } from 'lucide-react';
+import { LogOut, Upload, Search as SearchIcon } from 'lucide-react';
 import { signOut } from '@/auth';
 
 export default async function LibraryPage() {
@@ -28,6 +28,10 @@ export default async function LibraryPage() {
         <div className="flex flex-col items-end space-y-4">
           <ThemeToggle />
           <div className="flex items-center space-x-4">
+            <Link href="/search" className="flex items-center space-x-1 text-sm text-ink hover:text-muted transition-colors">
+              <SearchIcon className="w-4 h-4" />
+              <span>Search</span>
+            </Link>
             <Link href="/upload" className="flex items-center space-x-1 text-sm text-ink hover:text-muted transition-colors">
               <Upload className="w-4 h-4" />
               <span>Upload</span>
