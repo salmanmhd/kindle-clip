@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Star, MoreHorizontal, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function HighlightList({ initialHighlights, bookId }: { initialHighlights: any[], bookId?: string }) {
   const [highlights, setHighlights] = useState(initialHighlights);
@@ -55,8 +56,16 @@ export default function HighlightList({ initialHighlights, bookId }: { initialHi
 
   return (
     <div className="space-y-12">
-      {highlights.map(h => (
-        <div key={h._id} className="group relative">
+      <AnimatePresence mode="popLayout">
+      {highlights.map((h, i) => (
+        <motion.div 
+          key={h._id} 
+          className="group relative"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ delay: Math.min(i * 0.05, 0.5) }}
+        >
           <p className="text-ink font-serif text-[1.25rem] leading-relaxed text-balance">
             {h.text}
           </p>
@@ -106,8 +115,9 @@ export default function HighlightList({ initialHighlights, bookId }: { initialHi
             </div>
           </div>
           <div className="absolute -bottom-6 left-0 right-0 h-px bg-border/50 hidden group-last:hidden sm:block" />
-        </div>
+        </motion.div>
       ))}
+      </AnimatePresence>
     </div>
   );
 }

@@ -99,18 +99,21 @@ export default function Reader({ highlights, bookId, title }: { highlights: High
         <Link 
           href={`/books/${bookId}`} 
           className="flex items-center space-x-2 text-muted hover:text-ink transition-colors group"
+          aria-label="Back to book"
         >
-          <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
+          <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" aria-hidden="true" />
           <span className="font-sans text-sm hidden sm:inline">Back to book</span>
         </Link>
 
         <div className="flex items-center space-x-6">
           <button 
             onClick={toggleShuffle} 
-            className={`transition-colors ${shuffleMode ? 'text-ink' : 'text-muted hover:text-ink'}`}
+            className={`transition-colors p-2 -mr-2 ${shuffleMode ? 'text-ink' : 'text-muted hover:text-ink'}`}
             title="Shuffle Mode"
+            aria-label={shuffleMode ? "Disable shuffle" : "Enable shuffle"}
+            aria-pressed={shuffleMode}
           >
-            <Shuffle className="w-5 h-5" />
+            <Shuffle className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -134,9 +137,10 @@ export default function Reader({ highlights, bookId, title }: { highlights: High
             dragElastic={1}
             onDragEnd={(e, { offset, velocity }) => {
               const swipe = Math.abs(offset.x) * velocity.x;
-              if (swipe < -10000) {
+              // Trigger on fast swipe OR large drag distance
+              if (swipe < -10000 || offset.x < -100) {
                 paginate(1);
-              } else if (swipe > 10000) {
+              } else if (swipe > 10000 || offset.x > 100) {
                 paginate(-1);
               }
             }}
@@ -176,21 +180,23 @@ export default function Reader({ highlights, bookId, title }: { highlights: High
           <button 
             onClick={() => paginate(-1)} 
             disabled={currentIndex === 0}
-            className="text-muted hover:text-ink disabled:opacity-30 transition-all active:scale-95 p-2"
+            className="text-muted hover:text-ink disabled:opacity-30 transition-all active:scale-95 p-2 -ml-2"
+            aria-label="Previous highlight"
           >
-            <ChevronLeft className="w-8 h-8 stroke-[1.5]" />
+            <ChevronLeft className="w-8 h-8 stroke-[1.5]" aria-hidden="true" />
           </button>
           
-          <span className="text-muted font-sans text-sm font-medium tracking-widest w-12 text-center tabular-nums">
-            {currentIndex + 1} / {displayList.length}
+          <span className="text-muted font-sans text-sm font-medium tracking-widest w-12 text-center tabular-nums" aria-live="polite">
+            {currentIndex + 1} <span className="sr-only">out of</span> / {displayList.length}
           </span>
 
           <button 
             onClick={() => paginate(1)} 
             disabled={currentIndex === displayList.length - 1}
-            className="text-muted hover:text-ink disabled:opacity-30 transition-all active:scale-95 p-2"
+            className="text-muted hover:text-ink disabled:opacity-30 transition-all active:scale-95 p-2 -mr-2"
+            aria-label="Next highlight"
           >
-            <ChevronRight className="w-8 h-8 stroke-[1.5]" />
+            <ChevronRight className="w-8 h-8 stroke-[1.5]" aria-hidden="true" />
           </button>
         </div>
         

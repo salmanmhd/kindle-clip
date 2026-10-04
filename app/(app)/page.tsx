@@ -28,18 +28,18 @@ export default async function LibraryPage() {
         <div className="flex flex-col items-end space-y-4">
           <ThemeToggle />
           <div className="flex items-center space-x-4">
-            <Link href="/search" className="flex items-center space-x-1 text-sm text-ink hover:text-muted transition-colors">
-              <SearchIcon className="w-4 h-4" />
-              <span>Search</span>
+            <Link href="/search" className="flex items-center space-x-1 text-sm text-ink hover:text-muted transition-colors" aria-label="Search">
+              <SearchIcon className="w-4 h-4" aria-hidden="true" />
+              <span className="hidden sm:inline">Search</span>
             </Link>
-            <Link href="/upload" className="flex items-center space-x-1 text-sm text-ink hover:text-muted transition-colors">
-              <Upload className="w-4 h-4" />
-              <span>Upload</span>
+            <Link href="/upload" className="flex items-center space-x-1 text-sm text-ink hover:text-muted transition-colors" aria-label="Upload clippings">
+              <Upload className="w-4 h-4" aria-hidden="true" />
+              <span className="hidden sm:inline">Upload</span>
             </Link>
             <form action={async () => { 'use server'; await signOut(); }}>
-              <button className="flex items-center space-x-1 text-sm text-muted hover:text-ink transition-colors">
-                <LogOut className="w-4 h-4" />
-                <span>Log out</span>
+              <button type="submit" className="flex items-center space-x-1 text-sm text-muted hover:text-ink transition-colors" aria-label="Log out">
+                <LogOut className="w-4 h-4" aria-hidden="true" />
+                <span className="hidden sm:inline">Log out</span>
               </button>
             </form>
           </div>
