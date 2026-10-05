@@ -8,6 +8,13 @@ export default function OfflineSync() {
     // Only run in browser
     if (typeof window === 'undefined') return;
 
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(err => {
+        console.error('Service Worker registration failed: ', err);
+      });
+    }
+
     // Check online status
     if (!navigator.onLine) return;
 
@@ -62,6 +69,10 @@ export default function OfflineSync() {
         const lastSync = localStorage.getItem('lastSyncDate');
         const query = lastSync ? `?since=${lastSync}` : '';
         const res = await fetch(`/api/sync${query}`);
+        if (res.status === 401) {
+          window.location.href = '/login';
+          return;
+        }
         if (!res.ok) return;
 
         const data = await res.json();

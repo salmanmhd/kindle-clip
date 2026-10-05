@@ -5,6 +5,7 @@ const withSerwist = withSerwistInit({
   swSrc: "app/sw.ts",
   swDest: "public/sw.js",
   disable: process.env.NODE_ENV === "development", // Don't cache in dev
+  register: false,
 });
 
 const nextConfig: NextConfig = {
