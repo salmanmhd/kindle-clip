@@ -24,7 +24,10 @@ export async function GET(req: Request) {
 
     return new Response(`
       <html>
-        <head><title>Unsubscribed</title></head>
+        <head>
+          <title>Unsubscribed</title>
+          <meta name="robots" content="noindex, nofollow" />
+        </head>
         <body style="font-family: sans-serif; text-align: center; padding: 50px; color: #1C1B19; background: #FBF9F4;">
           <h2>Unsubscribed Successfully</h2>
           <p>You have been unsubscribed from the Daily Digest emails.</p>
@@ -32,7 +35,10 @@ export async function GET(req: Request) {
         </body>
       </html>
     `, {
-      headers: { 'Content-Type': 'text/html' }
+      headers: { 
+        'Content-Type': 'text/html',
+        'X-Robots-Tag': 'noindex, nofollow'
+      }
     });
   } catch (error: any) {
     return new Response('Error processing request', { status: 500 });

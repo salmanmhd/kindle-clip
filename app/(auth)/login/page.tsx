@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { login } from '@/app/actions/auth';
 import Link from 'next/link';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/library';
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -21,13 +23,13 @@ export default function LoginPage() {
         setError(res.error);
         setLoading(false);
       } else {
-        router.push('/');
+        router.push(callbackUrl);
         router.refresh();
       }
     } catch (err: any) {
-      if (err.message.includes('NEXT_REDIRECT')) {
+      if (err.message?.includes('NEXT_REDIRECT')) {
         // NextAuth redirect works via throwing an error
-        router.push('/');
+        router.push(callbackUrl);
         router.refresh();
       } else {
         setError('An unexpected error occurred.');
@@ -75,11 +77,19 @@ export default function LoginPage() {
       </form>
 
       <p className="mt-6 text-center text-sm text-muted">
-        Don't have an account?{' '}
+        Don&apos;t have an account?{' '}
         <Link href="/signup" className="text-ink hover:underline">
           Sign up
         </Link>
       </p>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="text-center py-6 text-sm text-muted">Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

@@ -4,6 +4,14 @@ import { Library, Star, Search, Settings, Upload, User, BookOpen } from 'lucide-
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import ThemeToggle from '@/components/ThemeToggle';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const session = await auth();
@@ -16,16 +24,16 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-background flex">
       {/* Desktop/Tablet Navigation */}
       <nav className="hidden md:flex flex-col fixed inset-y-0 left-0 w-64 border-r border-border bg-card/30 backdrop-blur-md p-6">
-        <div className="text-ink font-serif text-2xl tracking-tight font-semibold mb-12 flex items-center space-x-3">
+        <Link href="/library" className="text-ink font-serif text-2xl tracking-tight font-semibold mb-12 flex items-center space-x-3 hover:opacity-90 transition-opacity">
           <div className="w-8 h-8 rounded-full bg-ink text-background flex items-center justify-center">
             <BookOpen className="w-4 h-4" />
           </div>
           <span>Kindle Clipper</span>
-        </div>
+        </Link>
         
         <div className="flex flex-col space-y-2">
           <p className="text-xs font-sans uppercase tracking-widest text-muted mb-2 px-3">Menu</p>
-          <Link href="/" className="flex items-center space-x-3 text-ink/80 hover:text-ink hover:bg-secondary/50 px-3 py-2.5 rounded-lg transition-all font-medium">
+          <Link href="/library" className="flex items-center space-x-3 text-ink/80 hover:text-ink hover:bg-secondary/50 px-3 py-2.5 rounded-lg transition-all font-medium">
             <Library className="w-5 h-5" />
             <span>Library</span>
           </Link>
@@ -65,7 +73,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       {/* Main Content */}
       <main className="flex-1 md:ml-64 pb-20 md:pb-0 min-h-screen relative">
         <div className="md:hidden flex items-center justify-between p-4 border-b border-border bg-card/30 backdrop-blur-md">
-          <Link href="/" className="flex items-center space-x-2">
+          <Link href="/library" className="flex items-center space-x-2">
             <div className="w-6 h-6 rounded-full bg-ink text-background flex items-center justify-center">
               <BookOpen className="w-3 h-3" />
             </div>
@@ -87,7 +95,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 bg-card/85 backdrop-blur-md border-t border-border flex justify-around items-center h-16 z-50 px-1">
-        <Link href="/" className="flex flex-col items-center justify-center text-ink/80 hover:text-ink transition-colors py-1 px-2">
+        <Link href="/library" className="flex flex-col items-center justify-center text-ink/80 hover:text-ink transition-colors py-1 px-2">
           <Library className="w-5 h-5 mb-1" />
           <span className="text-[10px] font-medium">Library</span>
         </Link>

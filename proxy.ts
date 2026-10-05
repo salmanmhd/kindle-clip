@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
 import NextAuth from 'next-auth';
 import { authConfig } from './auth.config';
 
@@ -9,22 +8,37 @@ export default auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
 
+  const applyPreviewRobots = (res: NextResponse) => {
+    if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== 'production') {
+      res.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    }
+    return res;
+  };
+
   const isApiAuthRoute = nextUrl.pathname.startsWith('/api/auth');
   const isPublicRoute = 
+    nextUrl.pathname === '/' ||
+    nextUrl.pathname === '/privacy' ||
+    nextUrl.pathname.startsWith('/guides') ||
     nextUrl.pathname === '/login' || 
     nextUrl.pathname === '/signup' || 
     nextUrl.pathname.startsWith('/api/cron/') ||
-    nextUrl.pathname.startsWith('/unsubscribe');
+    nextUrl.pathname.startsWith('/api/unsubscribe') ||
+    nextUrl.pathname === '/robots.txt' ||
+    nextUrl.pathname === '/sitemap.xml' ||
+    nextUrl.pathname === '/opengraph-image' ||
+    nextUrl.pathname === '/icon.jpg' ||
+    nextUrl.pathname === '/manifest.json';
 
   if (isApiAuthRoute) {
-    return NextResponse.next();
+    return applyPreviewRobots(NextResponse.next());
   }
 
   if (isPublicRoute) {
     if (isLoggedIn && (nextUrl.pathname === '/login' || nextUrl.pathname === '/signup')) {
-      return NextResponse.redirect(new URL('/', nextUrl));
+      return applyPreviewRobots(NextResponse.redirect(new URL('/library', nextUrl)));
     }
-    return NextResponse.next();
+    return applyPreviewRobots(NextResponse.next());
   }
 
   if (!isLoggedIn) {
@@ -33,10 +47,10 @@ export default auth((req) => {
       callbackUrl += nextUrl.search;
     }
     const encodedCallbackUrl = encodeURIComponent(callbackUrl);
-    return NextResponse.redirect(new URL(`/login?callbackUrl=${encodedCallbackUrl}`, nextUrl));
+    return applyPreviewRobots(NextResponse.redirect(new URL(`/login?callbackUrl=${encodedCallbackUrl}`, nextUrl)));
   }
 
-  return NextResponse.next();
+  return applyPreviewRobots(NextResponse.next());
 });
 
 export const config = {

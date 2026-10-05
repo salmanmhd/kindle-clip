@@ -40,7 +40,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
   return (
     <div className="max-w-3xl mx-auto py-12 px-4 sm:px-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
       
-      <Link href="/" className="inline-flex items-center space-x-2 text-sm text-muted hover:text-ink transition-colors mb-12">
+      <Link href="/library" className="inline-flex items-center space-x-2 text-sm text-muted hover:text-ink transition-colors mb-12">
         <ArrowLeft className="w-4 h-4" />
         <span>Library</span>
       </Link>

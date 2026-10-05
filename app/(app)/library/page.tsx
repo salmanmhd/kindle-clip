@@ -5,13 +5,20 @@ import dbConnect from '@/lib/db';
 import Link from 'next/link';
 import { BookOpen, ScrollText } from 'lucide-react';
 import DashboardRandomHighlight from '@/components/DashboardRandomHighlight';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Library — Kindle Clipper',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function LibraryPage() {
   const session = await auth();
   await dbConnect();
 
-  // Books sorted by last activity (could be based on recent highlights or a specific timestamp)
-  // We'll just sort by highlightCount for now, or lastReadIndex if it was updated
   const books = await Book.find({ userId: session?.user?.id })
     .sort({ highlightCount: -1 })
     .lean();

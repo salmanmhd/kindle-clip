@@ -30,17 +30,30 @@ const notoarabic = Noto_Naskh_Arabic({
   display: "swap",
 })
 
-export const metadata = {
-  title: "Kindle Clipper",
-  description: "Read your Kindle highlights anywhere",
-  manifest: "/manifest.json",
+import type { Metadata, Viewport } from 'next';
+
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kindle-clip.vercel.app';
+
+export const viewport: Viewport = {
   themeColor: "#1C1B19",
+  width: "device-width",
+  initialScale: 1,
+};
+
+export const metadata: Metadata = {
+  metadataBase: new URL(appUrl),
+  title: {
+    default: "Kindle Clipper — Read & Rediscover Your Kindle Highlights",
+    template: "%s | Kindle Clipper",
+  },
+  description: "Transform your raw Kindle My Clippings.txt into an organized, searchable personal library. Read offline on any device.",
+  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "Kindle Clipper",
   },
-}
+};
 
 export default function RootLayout({
   children,
