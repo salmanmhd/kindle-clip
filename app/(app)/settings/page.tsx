@@ -8,6 +8,7 @@ import { sendDailyDigest } from '@/lib/email';
 import crypto from 'node:crypto';
 import TestEmailButton from '@/components/TestEmailButton';
 import LogoutButton from '@/components/LogoutButton';
+import ExportAllOfflineButton from '@/components/ExportAllOfflineButton';
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -113,6 +114,14 @@ export default async function SettingsPage() {
             Sign out and clear local offline data from this device.
           </p>
           <LogoutButton />
+        </div>
+
+        <div className="mt-8 pt-8 border-t border-border">
+          <h3 className="text-lg font-serif text-ink mb-2">Data</h3>
+          <p className="text-sm text-muted mb-4">
+            Download a markdown file of all your highlights. Works offline.
+          </p>
+          <ExportAllOfflineButton />
         </div>
       </div>
     </div>
