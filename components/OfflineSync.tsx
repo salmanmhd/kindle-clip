@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { db } from '@/lib/indexeddb';
+import { getDB } from '@/lib/indexeddb';
 
 export default function OfflineSync() {
   useEffect(() => {
@@ -19,26 +19,42 @@ export default function OfflineSync() {
         if (!res.ok) return;
 
         const data = await res.json();
-        
         const now = Date.now();
         
-        const books = data.books.map((b: any) => ({ ...b, syncedAt: now }));
-        const highlights = data.highlights.map((h: any) => ({ ...h, syncedAt: now }));
+        const db = await getDB();
+        if (!db) return;
 
-        await db.transaction('rw', db.books, db.highlights, async () => {
-          // Update all records. We could be smarter about diffing, but for a kindle clipper 
-          // (which usually has <10k highlights), a bulk put is extremely fast.
-          await db.books.bulkPut(books);
-          await db.highlights.bulkPut(highlights);
-          
-          if (data.deletedHighlightIds?.length > 0) {
-            await db.highlights.bulkDelete(data.deletedHighlightIds);
+        const tx = db.transaction(['books', 'highlights'], 'readwrite');
+        
+        if (data.books && data.books.length > 0) {
+          for (const b of data.books) {
+            await tx.objectStore('books').put({ ...b, syncedAt: now });
           }
-          
-          if (data.timestamp) {
-            localStorage.setItem('lastSyncDate', data.timestamp);
+        }
+        
+        if (data.highlights && data.highlights.length > 0) {
+          for (const h of data.highlights) {
+            await tx.objectStore('highlights').put({ ...h, syncedAt: now });
           }
-        });
+        }
+        
+        if (data.deletedHighlightIds?.length > 0) {
+          for (const id of data.deletedHighlightIds) {
+            await tx.objectStore('highlights').delete(id);
+          }
+        }
+
+        await tx.done;
+
+        if (data.timestamp) {
+          localStorage.setItem('lastSyncDate', data.timestamp);
+        }
+
+        // Request persistence to prevent browser eviction (PWA-003)
+        if (navigator.storage && navigator.storage.persist) {
+          const isPersisted = await navigator.storage.persist();
+          console.log(`Storage persisted: ${isPersisted}`);
+        }
         
         console.log('Successfully synced data to IndexedDB');
       } catch (err) {
@@ -49,7 +65,7 @@ export default function OfflineSync() {
     // Run sync on mount
     syncData();
     
-    // Optionally run sync on interval or window focus
+    // Optionally run sync on interval
     const interval = setInterval(syncData, 5 * 60 * 1000); // 5 mins
     return () => clearInterval(interval);
   }, []);

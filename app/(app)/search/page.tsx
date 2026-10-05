@@ -1,36 +1,35 @@
 'use client';
 
 import { useState } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '@/lib/indexeddb';
+import { useIDBQuery } from '@/lib/indexeddb';
 import Link from 'next/link';
 import { Search as SearchIcon, BookOpen } from 'lucide-react';
 
 export default function SearchPage() {
   const [query, setQuery] = useState('');
 
-  // Use Dexie's live query to search IndexedDB dynamically
-  const results = useLiveQuery(async () => {
+  const { data: results } = useIDBQuery(async (db) => {
     if (query.trim().length < 2) return [];
 
     const lowerQuery = query.toLowerCase();
     
-    // We don't have a full-text index in Dexie right now, so we filter in memory 
-    // This is extremely fast for <10,000 highlights (typical Kindle library)
-    const matches = await db.highlights
-      .filter(h => h.text.toLowerCase().includes(lowerQuery) || (h.note?.toLowerCase() || '').includes(lowerQuery))
-      .toArray();
+    const allHighlights = await db.getAll('highlights');
+    const matches = allHighlights.filter(h => 
+      h.text.toLowerCase().includes(lowerQuery) || 
+      (h.note?.toLowerCase() || '').includes(lowerQuery)
+    );
 
     // Attach book titles
     const bookIds = Array.from(new Set(matches.map(m => m.bookId)));
-    const books = await db.books.where('_id').anyOf(bookIds).toArray();
-    const bookMap = new Map(books.map(b => [b._id, b.title]));
+    const bookPromises = bookIds.map(id => db.get('books', id));
+    const books = (await Promise.all(bookPromises)).filter(b => !!b);
+    const bookMap = new Map(books.map(b => [b!._id, b!.title]));
 
     return matches.map(m => ({
       ...m,
       bookTitle: bookMap.get(m.bookId) || 'Unknown Book'
     }));
-  }, [query], []);
+  }, [query]);
 
   return (
     <div className="max-w-3xl mx-auto py-12 px-4 sm:px-6">
@@ -57,7 +56,6 @@ export default function SearchPage() {
           <div key={h._id} className="border-b border-border pb-6 last:border-0">
             <Link href={`/books/${h.bookId}/read`} className="group block">
               <p className="text-ink font-serif text-lg leading-relaxed group-hover:text-ink/80 transition-colors">
-                {/* Simple highlight of the search term */}
                 {h.text}
               </p>
               {h.note && (

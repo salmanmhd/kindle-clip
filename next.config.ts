@@ -1,17 +1,14 @@
-import type { NextConfig } from "next"
+import type { NextConfig } from "next";
+import withSerwistInit from "@serwist/next";
 
-// @ts-ignore - next-pwa doesn't have accurate types for Next.js 14+
-import withPWAInit from 'next-pwa';
-
-const withPWA = withPWAInit({
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development', // don't cache in dev
+const withSerwist = withSerwistInit({
+  swSrc: "app/sw.ts",
+  swDest: "public/sw.js",
+  disable: process.env.NODE_ENV === "development", // Don't cache in dev
 });
 
 const nextConfig: NextConfig = {
-  turbopack: {},
+  turbopack: {}, // Ignored by webpack build but useful if using `next dev --turbo`
   async headers() {
     return [
       {
@@ -24,6 +21,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-}
+};
 
-export default withPWA(nextConfig);
+export default withSerwist(nextConfig);

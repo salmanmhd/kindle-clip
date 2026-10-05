@@ -2,17 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '@/lib/indexeddb';
+import { useIDBQuery, getDB, LocalHighlight, LocalBook } from '@/lib/indexeddb';
 import Link from 'next/link';
 
 export default function DashboardRandomHighlight() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [seed, setSeed] = useState(Date.now());
 
-  const highlights = useLiveQuery(async () => {
-    const all = await db.highlights.toArray();
-    // Shuffle them based on our "seed" so we get a random order every time the user mounts this
+  const { data: highlights } = useIDBQuery(async (db) => {
+    const all = await db.getAll('highlights');
     return all.sort(() => Math.random() - 0.5);
   }, [seed]);
 
@@ -20,9 +18,15 @@ export default function DashboardRandomHighlight() {
 
   useEffect(() => {
     if (highlights && highlights.length > currentIndex) {
-      db.books.get(highlights[currentIndex].bookId).then(b => {
-        setBookTitle(b?.title || 'Unknown Book');
-      });
+      const p = getDB();
+      if (p) {
+        p.then(db => {
+          if (!db) return;
+          db.get('books', highlights[currentIndex].bookId).then(b => {
+            setBookTitle(b?.title || 'Unknown Book');
+          });
+        });
+      }
     }
   }, [currentIndex, highlights]);
 
@@ -48,7 +52,7 @@ export default function DashboardRandomHighlight() {
           onDragEnd={(e, { offset, velocity }) => {
             const swipe = Math.abs(offset.x) * velocity.x;
             if (swipe < -10000 || offset.x < -100 || swipe > 10000 || offset.x > 100) {
-              handleSwipe(1); // Swipe any direction moves to next
+              handleSwipe(1);
             }
           }}
           className="absolute inset-0 bg-card/50 backdrop-blur-md border border-border rounded-xl p-8 sm:p-12 shadow-sm flex flex-col justify-center items-center cursor-grab active:cursor-grabbing text-center"
