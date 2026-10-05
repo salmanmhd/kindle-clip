@@ -85,6 +85,12 @@ export function useIDBQuery<T>(
   useEffect(() => {
     let active = true;
     const load = async () => {
+      // If we've never synced, stay in loading state
+      if (typeof window !== 'undefined' && !localStorage.getItem('lastSyncDate')) {
+        if (active) setLoading(true);
+        return;
+      }
+
       setLoading(true);
       try {
         const db = await getDB();
@@ -102,7 +108,18 @@ export function useIDBQuery<T>(
       }
     };
     load();
-    return () => { active = false; };
+
+    const handleSync = () => setTick(t => t + 1);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('sync-completed', handleSync);
+    }
+
+    return () => { 
+      active = false; 
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('sync-completed', handleSync);
+      }
+    };
   }, [...deps, tick]);
 
   return { data, loading, error, refetch: () => setTick(t => t + 1) };

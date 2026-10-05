@@ -103,6 +103,7 @@ export default function OfflineSync() {
         }
         
         console.log('Successfully synced data to IndexedDB');
+        window.dispatchEvent(new Event('sync-completed'));
       } catch (err) {
         console.error('Failed to sync to IndexedDB', err);
       }
