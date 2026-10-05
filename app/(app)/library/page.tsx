@@ -64,7 +64,7 @@ export default function LibraryPage() {
             {books.map(b => (
               <Link 
                 key={b._id}
-                href={`/books/${b._id}/read`}
+                href={`/book?id=${b._id}`}
                 className="group flex flex-col bg-card/30 border border-border rounded-xl p-6 hover:bg-secondary/20 transition-all hover:-translate-y-1 hover:shadow-sm"
               >
                 <div className="aspect-[2/3] w-full bg-gradient-to-br from-secondary/50 to-background rounded-lg border border-border mb-4 flex flex-col items-center justify-center p-4 text-center">

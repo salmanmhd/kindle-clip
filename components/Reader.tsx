@@ -139,7 +139,7 @@ export default function Reader({ highlights, bookId, title }: { highlights: High
       {/* Minimalist Top Nav */}
       <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-50">
         <Link 
-          href={`/books/${bookId}`} 
+          href={`/book?id=${bookId}`} 
           className="flex items-center space-x-2 text-muted hover:text-ink transition-colors group"
           aria-label="Back to book"
         >

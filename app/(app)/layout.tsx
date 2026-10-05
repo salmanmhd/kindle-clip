@@ -13,13 +13,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function AppLayout({ children }: { children: ReactNode }) {
-  const session = await auth();
-  
-  if (!session) {
-    redirect('/login');
-  }
-
+export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Desktop/Tablet Navigation */}
@@ -65,7 +59,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
             <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
               <User className="w-4 h-4 text-muted" />
             </div>
-            <span className="font-medium text-sm truncate">{session.user?.email}</span>
+            <span className="font-medium text-sm truncate">Account</span>
           </div>
         </div>
       </nav>

@@ -4,24 +4,73 @@ import { useState } from 'react';
 import { Star, MoreHorizontal, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getDB } from '@/lib/indexeddb';
 
 export default function HighlightList({ initialHighlights, bookId }: { initialHighlights: any[], bookId?: string }) {
   const [highlights, setHighlights] = useState(initialHighlights);
 
   const toggleStar = async (id: string, current: boolean) => {
+    const newFavorite = !current;
+    
     // Optimistic update
-    setHighlights(prev => prev.map(h => h._id === id ? { ...h, favorite: !current } : h));
+    setHighlights(prev => prev.map(h => h._id === id ? { ...h, favorite: newFavorite } : h));
+    
+    // Update IDB cache immediately
+    try {
+      const db = await getDB();
+      if (db) {
+        const highlight = await db.get('highlights', id);
+        if (highlight) {
+          await db.put('highlights', { ...highlight, favorite: newFavorite });
+        }
+      }
+    } catch (e) {
+      console.error('Failed to update local db', e);
+    }
+
+    if (!navigator.onLine) {
+      // Offline queue
+      try {
+        const db = await getDB();
+        if (db) {
+          await db.put('syncQueue', {
+            _id: `fav_${id}_${Date.now()}`,
+            action: 'favorite',
+            payload: { id, favorite: newFavorite },
+            timestamp: Date.now()
+          });
+        }
+        toast.success('Saved offline');
+      } catch (e) {
+        console.error('Failed to queue action', e);
+      }
+      return;
+    }
+
     try {
       const res = await fetch(`/api/highlights/${id}/star`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ favorite: !current })
+        body: JSON.stringify({ favorite: newFavorite })
       });
       if (!res.ok) throw new Error('Failed to update');
     } catch (err) {
-      // Revert on error
-      setHighlights(prev => prev.map(h => h._id === id ? { ...h, favorite: current } : h));
-      toast.error('Failed to update favorite status');
+      // If network fails despite being "online", queue it
+      try {
+        const db = await getDB();
+        if (db) {
+          await db.put('syncQueue', {
+            _id: `fav_${id}_${Date.now()}`,
+            action: 'favorite',
+            payload: { id, favorite: newFavorite },
+            timestamp: Date.now()
+          });
+        }
+        toast.success('Saved offline (network error)');
+      } catch (e) {
+        setHighlights(prev => prev.map(h => h._id === id ? { ...h, favorite: current } : h));
+        toast.error('Failed to update favorite status');
+      }
     }
   };
 

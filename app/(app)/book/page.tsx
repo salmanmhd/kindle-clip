@@ -1,35 +1,37 @@
 'use client';
 
-import { use, useEffect } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useIDBQuery, LocalBook } from '@/lib/indexeddb';
 import HighlightList from '@/components/HighlightList';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { notFound, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
-// Allow this dynamic route to be exported statically if needed, or generated on demand
-export const dynamicParams = true;
+function BookPageContent() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id');
 
-export default function BookPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params);
-  const router = useRouter();
-
-  const { data: book, loading: bookLoading, error } = useIDBQuery(async (db) => {
-    return await db.get('books', resolvedParams.id);
+  const { data: book, loading: bookLoading } = useIDBQuery(async (db) => {
+    if (!id) return null;
+    return await db.get('books', id);
   });
 
   const { data: highlights, loading: hlLoading } = useIDBQuery(async (db) => {
-    const all = await db.getAllFromIndex('highlights', 'by-bookId', resolvedParams.id);
+    if (!id) return [];
+    const all = await db.getAllFromIndex('highlights', 'by-bookId', id);
     return all.sort((a, b) => (a.locStart || 0) - (b.locStart || 0));
   });
 
   const isLoading = bookLoading || hlLoading;
 
-  useEffect(() => {
-    if (!bookLoading && !book) {
-      // router.replace('/library');
-    }
-  }, [book, bookLoading, router]);
+  if (!id) {
+    return (
+      <div className="max-w-3xl mx-auto py-24 text-center">
+        <h1 className="text-2xl font-serif mb-4">No book specified</h1>
+        <Link href="/library" className="text-muted hover:text-ink">Return to Library</Link>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -55,7 +57,6 @@ export default function BookPage({ params }: { params: Promise<{ id: string }> }
     _id: h._id,
     userId: h.userId,
     bookId: h.bookId,
-    // Provide a dummy string date if HighlightList expects it
     syncedAt: h.syncedAt,
   }));
 
@@ -74,13 +75,13 @@ export default function BookPage({ params }: { params: Promise<{ id: string }> }
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-3">
           <Link 
-            href={`/books/${resolvedParams.id}/read`}
+            href={`/read?book=${id}`}
             className="w-full sm:w-auto inline-flex items-center justify-center bg-ink text-background px-6 py-2 rounded font-sans text-sm hover:bg-ink/90 transition-colors"
           >
             Read highlights
           </Link>
           <a
-            href={`/api/export/${resolvedParams.id}`}
+            href={`/api/export/${id}`}
             download
             className="w-full sm:w-auto inline-flex items-center justify-center bg-secondary text-ink px-6 py-2 rounded font-sans text-sm hover:bg-secondary/80 transition-colors border border-border"
           >
@@ -89,7 +90,19 @@ export default function BookPage({ params }: { params: Promise<{ id: string }> }
         </div>
       </div>
 
-      <HighlightList initialHighlights={safeHighlights as any} bookId={resolvedParams.id} />
+      <HighlightList initialHighlights={safeHighlights as any} bookId={id} />
     </div>
+  );
+}
+
+export default function BookPage() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-3xl mx-auto py-12 px-4 sm:px-6 flex justify-center items-center min-h-[50vh]">
+        <div className="w-8 h-8 rounded-full border-2 border-ink border-t-transparent animate-spin mb-4" />
+      </div>
+    }>
+      <BookPageContent />
+    </Suspense>
   );
 }

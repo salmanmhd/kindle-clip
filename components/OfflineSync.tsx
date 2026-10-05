@@ -13,6 +13,52 @@ export default function OfflineSync() {
 
     const syncData = async () => {
       try {
+        const db = await getDB();
+        if (!db) return;
+
+        // Process Offline Sync Queue first
+        const queue = await db.getAll('syncQueue');
+        if (queue.length > 0) {
+          // Compress the queue: keep only the latest action per item if multiple
+          const actionMap = new Map();
+          for (const item of queue.sort((a, b) => a.timestamp - b.timestamp)) {
+            // For favourite toggles, only the latest matters per highlight
+            if (item.action === 'favorite') {
+              actionMap.set(`fav_${item.payload.id}`, item);
+            } else {
+              actionMap.set(item._id, item);
+            }
+          }
+
+          const compressedQueue = Array.from(actionMap.values());
+          for (const item of compressedQueue) {
+            if (item.action === 'favorite') {
+              try {
+                const res = await fetch(`/api/highlights/${item.payload.id}/star`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ favorite: item.payload.favorite })
+                });
+                if (res.ok) {
+                  // If successful, delete all related actions from queue
+                  const allRelated = queue.filter(q => q.action === 'favorite' && q.payload.id === item.payload.id);
+                  const tx = db.transaction('syncQueue', 'readwrite');
+                  for (const rel of allRelated) {
+                    await tx.store.delete(rel._id);
+                  }
+                  await tx.done;
+                } else if (res.status >= 400 && res.status < 500) {
+                  // Server rejection (e.g. 404), drop the task
+                  const tx = db.transaction('syncQueue', 'readwrite');
+                  await tx.store.delete(item._id);
+                  await tx.done;
+                }
+              } catch (err) {
+                console.error('Failed to replay sync action', err);
+              }
+            }
+          }
+        }
         const lastSync = localStorage.getItem('lastSyncDate');
         const query = lastSync ? `?since=${lastSync}` : '';
         const res = await fetch(`/api/sync${query}`);
@@ -21,8 +67,8 @@ export default function OfflineSync() {
         const data = await res.json();
         const now = Date.now();
         
-        const db = await getDB();
-        if (!db) return;
+        // const db = await getDB(); // already initialized
+        // if (!db) return;
 
         const tx = db.transaction(['books', 'highlights'], 'readwrite');
         

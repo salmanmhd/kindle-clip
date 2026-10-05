@@ -9,6 +9,20 @@ const withSerwist = withSerwistInit({
 
 const nextConfig: NextConfig = {
   turbopack: {}, // Ignored by webpack build but useful if using `next dev --turbo`
+  async redirects() {
+    return [
+      {
+        source: '/books/:id/read',
+        destination: '/read?book=:id',
+        permanent: true,
+      },
+      {
+        source: '/books/:id',
+        destination: '/book?id=:id',
+        permanent: true,
+      }
+    ];
+  },
   async headers() {
     return [
       {

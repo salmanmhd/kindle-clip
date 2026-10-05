@@ -15,12 +15,12 @@ export default function OfflineFallback() {
       <p className="text-muted font-sans text-lg mb-8 max-w-md mx-auto">
         This page requires a network connection to load. When you reconnect, try refreshing the page.
       </p>
-      <button 
-        onClick={() => window.location.reload()}
-        className="px-6 py-3 bg-ink text-background rounded-full font-sans text-sm tracking-wide hover:bg-ink/90 transition-colors"
+      <a 
+        href="/"
+        className="px-6 py-3 bg-ink text-background rounded-full font-sans text-sm tracking-wide hover:bg-ink/90 transition-colors inline-block"
       >
         Try Again
-      </button>
+      </a>
     </div>
   );
 }

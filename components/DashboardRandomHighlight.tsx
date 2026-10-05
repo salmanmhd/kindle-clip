@@ -66,7 +66,7 @@ export default function DashboardRandomHighlight() {
             </p>
           )}
           <Link 
-            href={`/books/${current.bookId}/read`}
+            href={`/read?book=${current.bookId}`}
             className="mt-6 text-sm font-sans uppercase tracking-widest text-muted hover:text-ink transition-colors"
           >
             {bookTitle}

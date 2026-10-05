@@ -54,7 +54,7 @@ export default function SearchPage() {
 
         {results?.map(h => (
           <div key={h._id} className="border-b border-border pb-6 last:border-0">
-            <Link href={`/books/${h.bookId}/read`} className="group block">
+            <Link href={`/read?book=${h.bookId}`} className="group block">
               <p className="text-ink font-serif text-lg leading-relaxed group-hover:text-ink/80 transition-colors">
                 {h.text}
               </p>
