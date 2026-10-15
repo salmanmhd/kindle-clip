@@ -12,7 +12,8 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     const { id } = await params;
     await dbConnect();
     const h = await Highlight.findOneAndUpdate(
-      { _id: id, userId: session.user.id },
+      // Only live highlights, so a replayed delete can't decrement the count twice
+      { _id: id, userId: session.user.id, deletedAt: null },
       { deletedAt: new Date() },
       { new: true }
     );

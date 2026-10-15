@@ -10,22 +10,24 @@ export async function GET(req: Request) {
 
   try {
     await dbConnect();
-    
+
+    // Take the timestamp before querying so writes that land mid-request are picked up next time
+    const timestamp = new Date().toISOString();
+
     const url = new URL(req.url);
     const updatedSince = url.searchParams.get('since');
-    
-    let query: any = { userId: session.user.id };
+
+    const bookQuery: any = { userId: session.user.id };
+    // Soft-deleted highlights never go to the client; deletions are sent as ids below
+    const highlightQuery: any = { userId: session.user.id, deletedAt: null };
     if (updatedSince) {
-      query.updatedAt = { $gt: new Date(updatedSince) };
+      bookQuery.updatedAt = { $gt: new Date(updatedSince) };
+      highlightQuery.updatedAt = { $gt: new Date(updatedSince) };
     }
-    
-    // Fetch books for the user
-    const books = await Book.find(query).lean();
-    
-    // Fetch highlights for the user
-    const highlights = await Highlight.find(query).lean();
-    
-    // Fetch deleted highlights for the user if updatedSince
+
+    const books = await Book.find(bookQuery).lean();
+    const highlights = await Highlight.find(highlightQuery).lean();
+
     let deletedHighlightIds: string[] = [];
     if (updatedSince) {
       const deletedHighlights = await Highlight.find({
@@ -48,7 +50,7 @@ export async function GET(req: Request) {
         bookId: h.bookId.toString()
       })),
       deletedHighlightIds,
-      timestamp: new Date().toISOString()
+      timestamp
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

@@ -1,17 +1,32 @@
-import type { NextConfig } from "next"
+import type { NextConfig } from "next";
+import withSerwistInit from "@serwist/next";
 
-// @ts-ignore - next-pwa doesn't have accurate types for Next.js 14+
-import withPWAInit from 'next-pwa';
-
-const withPWA = withPWAInit({
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development', // don't cache in dev
+const withSerwist = withSerwistInit({
+  swSrc: "app/sw.ts",
+  swDest: "public/sw.js",
+  disable: process.env.NODE_ENV === "development", // Don't cache in dev
+  register: false,
+  // OfflineSync flushes and pulls on the `online` event itself; a full reload would
+  // throw away anything typed while offline (e.g. a half-written highlight on /add)
+  reloadOnOnline: false,
 });
 
 const nextConfig: NextConfig = {
-  turbopack: {},
+  turbopack: {}, // Ignored by webpack build but useful if using `next dev --turbo`
+  async redirects() {
+    return [
+      {
+        source: '/books/:id/read',
+        destination: '/read?book=:id',
+        permanent: true,
+      },
+      {
+        source: '/books/:id',
+        destination: '/book?id=:id',
+        permanent: true,
+      }
+    ];
+  },
   async headers() {
     return [
       {
@@ -24,6 +39,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-}
+};
 
-export default withPWA(nextConfig);
+export default withSerwist(nextConfig);

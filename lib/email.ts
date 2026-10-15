@@ -35,7 +35,7 @@ export async function sendDailyDigest(email: string, highlights: IHighlight[], u
             <p style="font-size: 18px; line-height: 1.7; margin-bottom: 15px;">"${escapeHtml(h.text)}"</p>
             ${h.note ? `<p style="font-size: 16px; font-style: italic; color: #8A857B; border-left: 2px solid #E6E1D6; padding-left: 15px;">Note: ${escapeHtml(h.note)}</p>` : ''}
             <div style="margin-top: 15px;">
-              <a href="${appUrl}/books/${h.bookId}" style="color: #B8872E; text-decoration: none; font-family: sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
+              <a href="${appUrl}/book?id=${h.bookId}" style="color: #B8872E; text-decoration: none; font-family: sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">
                 Read in context &rarr;
               </a>
             </div>

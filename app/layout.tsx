@@ -3,7 +3,6 @@ import "./globals.css"
 import { cn } from "@/lib/utils"
 import { ThemeProvider } from "@/components/ThemeProvider"
 import { Toaster } from "sonner"
-import OfflineSync from "@/components/OfflineSync"
 
 const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
@@ -82,7 +81,6 @@ export default function RootLayout({
         `}} />
         <ThemeProvider attribute="class" defaultTheme="paper" themes={['paper', 'sepia', 'night']} disableTransitionOnChange>
           {children}
-          <OfflineSync />
           <Toaster 
             position="bottom-center"
             toastOptions={{

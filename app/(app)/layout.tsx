@@ -1,9 +1,10 @@
 import { ReactNode } from 'react';
 import Link from 'next/link';
-import { Library, Star, Search, Settings, Upload, User, BookOpen } from 'lucide-react';
+import { Library, Star, Search, Settings, Upload, User, BookOpen, PenLine } from 'lucide-react';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import ThemeToggle from '@/components/ThemeToggle';
+import OfflineSync from '@/components/OfflineSync';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -13,13 +14,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function AppLayout({ children }: { children: ReactNode }) {
-  const session = await auth();
-  
-  if (!session) {
-    redirect('/login');
-  }
-
+export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Desktop/Tablet Navigation */}
@@ -48,6 +43,10 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         </div>
         
         <div className="mt-auto flex flex-col space-y-2">
+          <Link href="/add" className="flex items-center space-x-3 text-ink/80 hover:text-ink hover:bg-secondary/50 px-3 py-2.5 rounded-lg transition-all font-medium">
+            <PenLine className="w-5 h-5" />
+            <span>Add highlight</span>
+          </Link>
           <Link href="/upload" className="flex items-center space-x-3 text-ink/80 hover:text-ink hover:bg-secondary/50 px-3 py-2.5 rounded-lg transition-all font-medium">
             <Upload className="w-5 h-5" />
             <span>Upload clippings</span>
@@ -65,7 +64,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
             <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
               <User className="w-4 h-4 text-muted" />
             </div>
-            <span className="font-medium text-sm truncate">{session.user?.email}</span>
+            <span className="font-medium text-sm truncate">Account</span>
           </div>
         </div>
       </nav>
@@ -92,6 +91,10 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         </div>
         {children}
       </main>
+
+      {/* Mounted with the signed-in shell (not the root layout) so it starts syncing right
+          after login and never registers the service worker for logged-out visitors */}
+      <OfflineSync />
 
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 bg-card/85 backdrop-blur-md border-t border-border flex justify-around items-center h-16 z-50 px-1">

@@ -2,13 +2,14 @@
 
 import { LogOut } from 'lucide-react';
 import { signOut } from 'next-auth/react';
-import { db } from '@/lib/indexeddb';
+import { deleteDB } from 'idb';
+import { clearReadingProgress } from '@/lib/reading-progress';
 
 export default function LogoutButton() {
   const handleLogout = async () => {
-    // Clear offline cache
+    // Clear offline cache (idb)
     try {
-      await db.delete();
+      await deleteDB('KindleClipperDB');
     } catch (e) {
       console.error('Failed to clear local database', e);
     }
@@ -21,6 +22,12 @@ export default function LogoutButton() {
       } catch (e) {
         console.error('Failed to clear caches', e);
       }
+    }
+
+    // Clear saved sync timestamp
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('lastSyncDate');
+      clearReadingProgress();
     }
 
     // Call NextAuth sign out
