@@ -9,6 +9,8 @@ import crypto from 'node:crypto';
 import TestEmailButton from '@/components/TestEmailButton';
 import LogoutButton from '@/components/LogoutButton';
 import ExportAllOfflineButton from '@/components/ExportAllOfflineButton';
+import Link from 'next/link';
+import { History, Trash2 } from 'lucide-react';
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -122,6 +124,16 @@ export default async function SettingsPage() {
             Download a markdown file of all your highlights. Works offline.
           </p>
           <ExportAllOfflineButton />
+          <div className="mt-2 flex flex-col">
+            <Link href="/settings/imports" className="flex items-center space-x-2 text-sm text-ink/80 hover:text-ink transition-colors py-2">
+              <History className="w-4 h-4" />
+              <span>Import history</span>
+            </Link>
+            <Link href="/trash" className="flex items-center space-x-2 text-sm text-ink/80 hover:text-ink transition-colors py-2">
+              <Trash2 className="w-4 h-4" />
+              <span>Recently deleted</span>
+            </Link>
+          </div>
         </div>
       </div>
     </div>

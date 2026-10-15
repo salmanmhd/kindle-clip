@@ -1,13 +1,20 @@
 'use client';
 
-import { useIDBQuery } from '@/lib/indexeddb';
+import { useIDBQuery, LocalHighlight } from '@/lib/indexeddb';
 import HighlightList from '@/components/HighlightList';
 
+const EMPTY: LocalHighlight[] = [];
+
 export default function FavouritesPage() {
-  const { data: highlights, loading } = useIDBQuery(async (db) => {
-    const allFavs = await db.getAllFromIndex('highlights', 'by-favorite', 1);
-    // Sort by syncedAt descending as an approximation for updatedAt
-    return allFavs.sort((a, b) => b.syncedAt - a.syncedAt);
+  const { data, loading } = useIDBQuery(async (db) => {
+    // Stored booleans aren't valid IndexedDB keys, so the by-favorite index can't be queried
+    const all = await db.getAll('highlights');
+    const favourites = all.filter(h => h.favorite).sort((a, b) => b.syncedAt - a.syncedAt);
+    const books = await db.getAll('books');
+    return {
+      favourites,
+      books: Object.fromEntries(books.map(b => [b._id, { title: b.title, author: b.author }]))
+    };
   });
 
   if (loading) {
@@ -18,28 +25,16 @@ export default function FavouritesPage() {
     );
   }
 
-  const safeHighlights = (highlights || []).map(h => ({
-    _id: h._id,
-    userId: h.userId,
-    bookId: h.bookId,
-    text: h.text,
-    note: h.note,
-    locStart: h.locStart,
-    locEnd: h.locEnd,
-    page: h.page,
-    favorite: h.favorite,
-    // Provide string dates for HighlightList compatibility if needed, or update HighlightList to accept IDB format
-    syncedAt: h.syncedAt
-  }));
+  const favourites = data?.favourites ?? EMPTY;
 
   return (
     <div className="max-w-3xl mx-auto py-12 px-4 sm:px-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
       <div className="mb-12 flex justify-between items-baseline">
         <h1 className="text-3xl font-serif text-ink">Favourites</h1>
-        <span className="text-muted text-sm">{safeHighlights.length} saved</span>
+        <span className="text-muted text-sm">{favourites.length} saved</span>
       </div>
 
-      <HighlightList initialHighlights={safeHighlights as any} />
+      <HighlightList initialHighlights={favourites} books={data?.books} />
     </div>
   );
 }

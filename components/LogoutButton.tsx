@@ -3,6 +3,7 @@
 import { LogOut } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 import { deleteDB } from 'idb';
+import { clearReadingProgress } from '@/lib/reading-progress';
 
 export default function LogoutButton() {
   const handleLogout = async () => {
@@ -26,6 +27,7 @@ export default function LogoutButton() {
     // Clear saved sync timestamp
     if (typeof window !== 'undefined') {
       localStorage.removeItem('lastSyncDate');
+      clearReadingProgress();
     }
 
     // Call NextAuth sign out

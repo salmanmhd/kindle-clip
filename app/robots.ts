@@ -22,6 +22,8 @@ export default function robots(): MetadataRoute.Robots {
           '/upload/',
           '/settings',
           '/settings/',
+          '/add',
+          '/trash',
           '/login',
           '/signup',
         ],

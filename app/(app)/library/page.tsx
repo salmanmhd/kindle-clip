@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { BookOpen, ScrollText } from 'lucide-react';
+import { BookOpen, ScrollText, Plus } from 'lucide-react';
 import DashboardRandomHighlight from '@/components/DashboardRandomHighlight';
+import ContinueReading from '@/components/ContinueReading';
+import BookCover from '@/components/BookCover';
 import { useIDBQuery } from '@/lib/indexeddb';
 
 export default function LibraryPage() {
@@ -31,7 +33,16 @@ export default function LibraryPage() {
       
       {/* Header & Stats */}
       <div className="mb-16">
-        <h1 className="text-3xl font-serif text-ink mb-8">Dashboard</h1>
+        <div className="flex items-center justify-between gap-4 mb-8">
+          <h1 className="text-3xl font-serif text-ink">Dashboard</h1>
+          <Link
+            href="/add"
+            className="inline-flex items-center gap-1.5 bg-ink text-background px-4 py-2 rounded font-sans text-sm hover:bg-ink/90 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add highlight
+          </Link>
+        </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="bg-card/30 border border-border rounded-xl p-6 flex flex-col justify-between h-32 backdrop-blur-md">
@@ -51,6 +62,8 @@ export default function LibraryPage() {
         </div>
       </div>
 
+      {books && <ContinueReading books={books} />}
+
       <DashboardRandomHighlight />
 
       {!books || books.length === 0 ? (
@@ -67,13 +80,12 @@ export default function LibraryPage() {
                 href={`/book?id=${b._id}`}
                 className="group flex flex-col bg-card/30 border border-border rounded-xl p-6 hover:bg-secondary/20 transition-all hover:-translate-y-1 hover:shadow-sm"
               >
-                <div className="aspect-[2/3] w-full bg-gradient-to-br from-secondary/50 to-background rounded-lg border border-border mb-4 flex flex-col items-center justify-center p-4 text-center">
-                  <h3 className="font-serif text-ink font-medium leading-snug line-clamp-3 group-hover:text-ink/80 transition-colors">
+                <BookCover title={b.title} coverUrl={b.coverUrl} className="w-full mb-4" />
+
+                <div className="flex-1">
+                  <h3 className="font-serif text-ink font-medium leading-snug line-clamp-2 mb-1 group-hover:text-ink/80 transition-colors">
                     {b.title}
                   </h3>
-                </div>
-                
-                <div className="flex-1">
                   {b.author && (
                     <p className="text-xs font-sans text-muted mb-3 truncate">{b.author}</p>
                   )}

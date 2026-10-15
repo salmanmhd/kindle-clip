@@ -6,6 +6,9 @@ const withSerwist = withSerwistInit({
   swDest: "public/sw.js",
   disable: process.env.NODE_ENV === "development", // Don't cache in dev
   register: false,
+  // OfflineSync flushes and pulls on the `online` event itself; a full reload would
+  // throw away anything typed while offline (e.g. a half-written highlight on /add)
+  reloadOnOnline: false,
 });
 
 const nextConfig: NextConfig = {

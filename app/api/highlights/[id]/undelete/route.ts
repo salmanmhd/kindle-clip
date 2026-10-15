@@ -12,7 +12,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const { id } = await params;
     await dbConnect();
     const h = await Highlight.findOneAndUpdate(
-      { _id: id, userId: session.user.id },
+      // Only deleted highlights, so a double "Undo" can't increment the count twice
+      { _id: id, userId: session.user.id, deletedAt: { $ne: null } },
       { deletedAt: null },
       { new: true }
     );

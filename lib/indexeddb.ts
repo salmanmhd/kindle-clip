@@ -5,8 +5,10 @@ export interface LocalBook {
   _id: string;
   userId: string;
   title: string;
-  author: string;
+  author: string | null;
   highlightCount: number;
+  coverUrl?: string | null;
+  coverCheckedAt?: string | null;
   syncedAt: number;
 }
 
@@ -15,19 +17,45 @@ export interface LocalHighlight {
   userId: string;
   bookId: string;
   text: string;
-  note?: string;
+  note?: string | null;
   locStart?: number;
   locEnd?: number;
-  page?: number;
+  page?: number | null;
   favorite: boolean;
+  source?: 'kindle' | 'manual';
+  createdAt?: string;
   syncedAt: number;
 }
 
 export interface LocalSyncQueueItem {
   _id: string; // generated client-side id
-  action: 'favorite' | 'delete' | 'edit_note';
+  action: 'favorite' | 'delete' | 'edit_note' | 'create';
   payload: any;
   timestamp: number;
+}
+
+// 24-hex id in MongoDB ObjectId layout, so records created offline keep their id on the server
+export function newObjectId() {
+  const time = Math.floor(Date.now() / 1000).toString(16).padStart(8, '0');
+  const rand = Array.from(crypto.getRandomValues(new Uint8Array(8)), b => b.toString(16).padStart(2, '0')).join('');
+  return time + rand;
+}
+
+export async function queueAction(action: LocalSyncQueueItem['action'], payload: any) {
+  const db = await getDB();
+  if (!db) return;
+  const now = Date.now();
+  await db.put('syncQueue', { _id: `${action}_${payload.id ?? payload._id}_${now}`, action, payload, timestamp: now });
+}
+
+// Ask OfflineSync to flush the queue and pull changes now instead of waiting for the interval
+export function requestSync() {
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('request-sync'));
+}
+
+// Lets other open views re-read IndexedDB after a local write
+export function notifyLocalChange() {
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('sync-completed'));
 }
 
 interface KindleClipperDB extends DBSchema {

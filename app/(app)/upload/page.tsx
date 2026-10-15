@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { requestSync } from '@/lib/indexeddb';
 
 export default function UploadPage() {
   const [loading, setLoading] = useState(false);
@@ -41,6 +42,8 @@ export default function UploadPage() {
       }
 
       setSummary(data.result);
+      // Pull the new books and highlights onto this device right away
+      requestSync();
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -96,12 +99,17 @@ export default function UploadPage() {
             ))}
           </div>
 
-          <button 
-            onClick={() => setSummary(null)}
-            className="text-sm underline underline-offset-4 text-ink hover:text-muted transition-colors"
-          >
-            Upload another file
-          </button>
+          <div className="flex items-center gap-6">
+            <button
+              onClick={() => setSummary(null)}
+              className="text-sm underline underline-offset-4 text-ink hover:text-muted transition-colors"
+            >
+              Upload another file
+            </button>
+            <Link href="/settings/imports" className="text-sm text-muted hover:text-ink transition-colors">
+              Import history
+            </Link>
+          </div>
         </div>
       )}
     </div>

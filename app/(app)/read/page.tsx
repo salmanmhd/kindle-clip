@@ -9,17 +9,18 @@ import { useSearchParams } from 'next/navigation';
 function ReadBookPageContent() {
   const searchParams = useSearchParams();
   const id = searchParams.get('book');
-  
+  const highlightId = searchParams.get('highlight');
+
   const { data: book, loading: bookLoading } = useIDBQuery(async (db) => {
     if (!id) return null;
     return await db.get('books', id);
-  });
+  }, [id]);
 
   const { data: highlights, loading: hlLoading } = useIDBQuery(async (db) => {
     if (!id) return [];
     const all = await db.getAllFromIndex('highlights', 'by-bookId', id);
     return all.sort((a, b) => (a.locStart || 0) - (b.locStart || 0));
-  });
+  }, [id]);
 
   const isLoading = bookLoading || hlLoading;
 
@@ -56,15 +57,22 @@ function ReadBookPageContent() {
   const safeHighlights = (highlights || []).map(h => ({
     _id: h._id,
     text: h.text,
-    note: h.note,
+    note: h.note ?? undefined,
     locStart: h.locStart,
     locEnd: h.locEnd,
-    page: h.page,
+    page: h.page ?? undefined,
     favorite: h.favorite
   }));
 
   return (
-    <Reader highlights={safeHighlights} bookId={id} title={book.title} />
+    <Reader
+      key={`${id}:${highlightId ?? ''}`}
+      highlights={safeHighlights}
+      bookId={id}
+      title={book.title}
+      author={book.author}
+      initialHighlightId={highlightId}
+    />
   );
 }
 

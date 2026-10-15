@@ -1,11 +1,14 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
-import { useIDBQuery, LocalBook } from '@/lib/indexeddb';
+import { Suspense } from 'react';
+import { useIDBQuery, LocalHighlight } from '@/lib/indexeddb';
 import HighlightList from '@/components/HighlightList';
+import BookCover from '@/components/BookCover';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
+
+const EMPTY: LocalHighlight[] = [];
 
 function BookPageContent() {
   const searchParams = useSearchParams();
@@ -14,13 +17,13 @@ function BookPageContent() {
   const { data: book, loading: bookLoading } = useIDBQuery(async (db) => {
     if (!id) return null;
     return await db.get('books', id);
-  });
+  }, [id]);
 
   const { data: highlights, loading: hlLoading } = useIDBQuery(async (db) => {
     if (!id) return [];
     const all = await db.getAllFromIndex('highlights', 'by-bookId', id);
     return all.sort((a, b) => (a.locStart || 0) - (b.locStart || 0));
-  });
+  }, [id]);
 
   const isLoading = bookLoading || hlLoading;
 
@@ -52,28 +55,26 @@ function BookPageContent() {
     );
   }
 
-  const safeHighlights = (highlights || []).map(h => ({
-    ...h,
-    _id: h._id,
-    userId: h.userId,
-    bookId: h.bookId,
-    syncedAt: h.syncedAt,
-  }));
-
   return (
     <div className="max-w-3xl mx-auto py-12 px-4 sm:px-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      
+
       <Link href="/library" className="inline-flex items-center space-x-2 text-sm text-muted hover:text-ink transition-colors mb-12">
         <ArrowLeft className="w-4 h-4" />
         <span>Library</span>
       </Link>
 
-      <div className="mb-16 flex flex-col sm:flex-row sm:items-end justify-between space-y-6 sm:space-y-0">
-        <div>
-          <h1 className="text-3xl font-serif text-ink mb-2">{book.title}</h1>
-          {book.author && <p className="text-lg text-muted">{book.author}</p>}
+      <div className="mb-16 flex flex-col gap-8">
+        <div className="flex items-end gap-5 sm:gap-6">
+          <BookCover title={book.title} coverUrl={book.coverUrl} compact className="w-20 sm:w-28 shrink-0 shadow-sm" />
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-serif text-ink mb-2 text-balance">{book.title}</h1>
+            {book.author && <p className="text-lg text-muted">{book.author}</p>}
+            <p className="text-xs font-sans uppercase tracking-widest text-muted mt-2">
+              {book.highlightCount} highlight{book.highlightCount === 1 ? '' : 's'}
+            </p>
+          </div>
         </div>
-        <div className="flex flex-col sm:flex-row items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <Link 
             href={`/read?book=${id}`}
             className="w-full sm:w-auto inline-flex items-center justify-center bg-ink text-background px-6 py-2 rounded font-sans text-sm hover:bg-ink/90 transition-colors"
@@ -87,10 +88,21 @@ function BookPageContent() {
           >
             Export Markdown
           </a>
+          <Link
+            href={`/add?book=${id}`}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 text-ink px-3 py-2 rounded font-sans text-sm hover:bg-secondary/50 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add
+          </Link>
         </div>
       </div>
 
-      <HighlightList initialHighlights={safeHighlights as any} bookId={id} />
+      <HighlightList
+        initialHighlights={highlights ?? EMPTY}
+        bookId={id}
+        books={{ [book._id]: { title: book.title, author: book.author } }}
+      />
     </div>
   );
 }

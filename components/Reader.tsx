@@ -5,7 +5,9 @@ import { m, AnimatePresence, LazyMotion, domAnimation } from 'framer-motion';
 import { ArrowLeft, Shuffle, Bookmark, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import ShareButton from '@/components/ShareButton';
+import ShareCardButton from '@/components/ShareCardButton';
+import { getDB, notifyLocalChange, queueAction } from '@/lib/indexeddb';
+import { saveReadingProgress } from '@/lib/reading-progress';
 
 interface Highlight {
   _id: string;
@@ -17,43 +19,46 @@ interface Highlight {
   favorite: boolean;
 }
 
-export default function Reader({ highlights, bookId, title }: { highlights: Highlight[], bookId: string, title: string }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+interface ReaderProps {
+  highlights: Highlight[];
+  bookId: string;
+  title: string;
+  author?: string | null;
+  initialHighlightId?: string | null;
+}
+
+export default function Reader({ highlights, bookId, title, author, initialHighlightId }: ReaderProps) {
+  // The reader only mounts client-side after IndexedDB loads (and remounts per book),
+  // so initial state can come straight from localStorage
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    // A deep link to a specific highlight (e.g. from search) wins over the saved position
+    const linked = initialHighlightId ? highlights.findIndex(h => h._id === initialHighlightId) : -1;
+    if (linked >= 0) return linked;
+    const saved = parseInt(localStorage.getItem(`reader_pos_${bookId}`) || '0', 10) || 0;
+    return Math.max(0, Math.min(saved, highlights.length - 1));
+  });
   const [direction, setDirection] = useState(0);
   const [shuffleMode, setShuffleMode] = useState(false);
   const [displayList, setDisplayList] = useState(highlights);
-  
+
   // Font controls
-  const [fontSize, setFontSize] = useState(24);
-  const [lineHeight, setLineHeight] = useState(1.6);
-  
+  const [fontSize, setFontSize] = useState(() => parseInt(localStorage.getItem('reader_fontSize') || '', 10) || 24);
+  const [lineHeight, setLineHeight] = useState(() => parseFloat(localStorage.getItem('reader_lineHeight') || '') || 1.6);
+
   // Note editing
   const [isEditing, setIsEditing] = useState(false);
   const [editingNote, setEditingNote] = useState('');
 
-  // Sync with local storage
+  // Remember the position for "continue reading" (shuffled order isn't a reading position)
   useEffect(() => {
-    const saved = localStorage.getItem(`reader_pos_${bookId}`);
-    if (saved && !shuffleMode) {
-      setCurrentIndex(Math.min(parseInt(saved, 10), highlights.length - 1));
-    }
-    const savedSize = localStorage.getItem('reader_fontSize');
-    if (savedSize) setFontSize(parseInt(savedSize, 10));
-    const savedLineHeight = localStorage.getItem('reader_lineHeight');
-    if (savedLineHeight) setLineHeight(parseFloat(savedLineHeight));
-  }, [bookId, highlights.length, shuffleMode]);
+    if (!shuffleMode && highlights.length > 0) saveReadingProgress(bookId, currentIndex, highlights.length);
+  }, [bookId, currentIndex, shuffleMode, highlights.length]);
 
   const saveSettings = (newSize: number, newHeight: number) => {
     localStorage.setItem('reader_fontSize', newSize.toString());
     localStorage.setItem('reader_lineHeight', newHeight.toString());
     setFontSize(newSize);
     setLineHeight(newHeight);
-  };
-
-  const savePosition = (index: number) => {
-    if (!shuffleMode) {
-      localStorage.setItem(`reader_pos_${bookId}`, index.toString());
-    }
   };
 
   const toggleShuffle = () => {
@@ -77,11 +82,7 @@ export default function Reader({ highlights, bookId, title }: { highlights: High
       return;
     }
     setDirection(newDirection);
-    setCurrentIndex(prev => {
-      const next = prev + newDirection;
-      savePosition(next);
-      return next;
-    });
+    setCurrentIndex(prev => prev + newDirection);
   };
 
   if (displayList.length === 0) {
@@ -95,24 +96,36 @@ export default function Reader({ highlights, bookId, title }: { highlights: High
   const current = displayList[currentIndex];
   
   const saveNote = async () => {
+    const id = current._id;
+    const note = editingNote.trim() || null;
+    const applyLocally = async () => {
+      setDisplayList(list => list.map(h => (h._id === id ? { ...h, note: note ?? undefined } : h)));
+      setIsEditing(false);
+      const db = await getDB();
+      const stored = db && (await db.get('highlights', id));
+      if (db && stored) await db.put('highlights', { ...stored, note });
+    };
+
     try {
-      const res = await fetch(`/api/highlights/${current._id}/note`, {
+      if (!navigator.onLine) throw new Error('offline');
+      const res = await fetch(`/api/highlights/${id}/note`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ note: editingNote })
+        body: JSON.stringify({ note })
       });
-      if (res.ok) {
-        const newList = [...displayList];
-        newList[currentIndex] = { ...newList[currentIndex], note: editingNote };
-        setDisplayList(newList);
-        setIsEditing(false);
-        toast.success('Note saved');
-      } else {
+      if (!res.ok) {
         toast.error('Failed to save note');
+        return;
       }
-    } catch (error) {
-      toast.error('Error saving note');
+      await applyLocally();
+      toast.success('Note saved');
+    } catch {
+      // Offline or network error: keep the note locally and sync it later
+      await applyLocally();
+      await queueAction('edit_note', { id, note });
+      toast.success('Note saved offline');
     }
+    notifyLocalChange();
   };
 
   const variants = {
@@ -175,11 +188,7 @@ export default function Reader({ highlights, bookId, title }: { highlights: High
             <Shuffle className="w-5 h-5" aria-hidden="true" />
           </button>
           
-          <ShareButton 
-            text={current.text} 
-            bookTitle={title} 
-            author={null} // We don't have author in Reader props right now, that's fine
-          />
+          <ShareCardButton highlightId={current._id} text={current.text} bookTitle={title} author={author} />
         </div>
       </div>
 
