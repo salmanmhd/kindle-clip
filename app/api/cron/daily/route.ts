@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import { User } from '@/lib/models/User';
-import { Highlight } from '@/lib/models/Highlight';
 import { sendDailyDigest } from '@/lib/email';
+import { getNextRevisionHighlights } from '@/lib/revision';
 import crypto from 'node:crypto';
 
 export async function GET(req: Request) {
@@ -17,22 +17,20 @@ export async function GET(req: Request) {
     await dbConnect();
 
     // Find users who have dailyEmail enabled
-    const users = await User.find({ 'settings.dailyEmail': true }).lean();
+    const users = await User.find({ 'settings.dailyEmail': true });
 
     let emailsSent = 0;
 
     for (const user of users) {
-      // Find 5 random highlights for this user
-      // We use aggregation pipeline $sample
-      const randomHighlights = await Highlight.aggregate([
-        { $match: { userId: user._id, deletedAt: null } },
-        { $sample: { size: 5 } }
-      ]);
-
-      if (randomHighlights.length === 0) continue;
-
       const today = new Date().toISOString().split('T')[0];
       if (user.lastDailyEmailDate === today) {
+        continue;
+      }
+
+      // Fetch next revision batch in book-wise order
+      const revision = await getNextRevisionHighlights(user._id, { previewOnly: false });
+
+      if (!revision || !revision.highlights || revision.highlights.length === 0) {
         continue;
       }
 
@@ -43,17 +41,24 @@ export async function GET(req: Request) {
       }
 
       try {
-        await sendDailyDigest(user.email, randomHighlights, token);
+        await sendDailyDigest(
+          user.email,
+          revision.highlights,
+          token,
+          revision.book ? {
+            title: revision.book.title,
+            author: revision.book.author,
+            progress: revision.progress || undefined
+          } : undefined
+        );
+
         await User.updateOne({ _id: user._id }, { 
           $set: { 
             unsubscribeToken: token,
             lastDailyEmailDate: today 
           } 
         });
-        await Highlight.updateMany(
-          { _id: { $in: randomHighlights.map(h => h._id) } },
-          { $set: { emailedAt: new Date() } }
-        );
+
         emailsSent++;
       } catch (err) {
         console.error(`Failed to send email to ${user.email}`, err);

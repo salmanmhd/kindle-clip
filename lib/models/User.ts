@@ -10,6 +10,9 @@ export interface IUser extends Document {
     lineHeight: number;
     dailyEmail: boolean;
     timezone: string;
+    reminderBookId?: mongoose.Types.ObjectId | null;
+    autoAdvanceBook?: boolean;
+    highlightsPerEmail?: number;
   };
   unsubscribeToken: string;
   lastDailyEmailDate: string | null;
@@ -24,7 +27,10 @@ const UserSchema = new Schema<IUser>({
     fontScale: { type: Number, default: 1 },
     lineHeight: { type: Number, default: 1.6 },
     dailyEmail: { type: Boolean, default: false },
-    timezone: { type: String, default: 'UTC' }
+    timezone: { type: String, default: 'UTC' },
+    reminderBookId: { type: Schema.Types.ObjectId, ref: 'Book', default: null },
+    autoAdvanceBook: { type: Boolean, default: true },
+    highlightsPerEmail: { type: Number, default: 3 }
   },
   unsubscribeToken: { type: String, required: true },
   lastDailyEmailDate: { type: String, default: null }
