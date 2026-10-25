@@ -112,6 +112,7 @@ export default async function SettingsPage() {
           ? {
               title: revision.book.title,
               author: revision.book.author,
+            coverUrl: (revision.book as any).coverUrl ?? null,
               progress: revision.progress || undefined
             }
           : undefined

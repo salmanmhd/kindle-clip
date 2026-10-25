@@ -48,6 +48,7 @@ export async function GET(req: Request) {
           revision.book ? {
             title: revision.book.title,
             author: revision.book.author,
+            coverUrl: (revision.book as any).coverUrl ?? null,
             progress: revision.progress || undefined
           } : undefined
         );
