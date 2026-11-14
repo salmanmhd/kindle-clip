@@ -1,5 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import { auth } from '@/auth';
 import { 
   BookOpen, 
   ArrowRight, 
@@ -46,7 +48,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const session = await auth();
+  if (session?.user?.id) redirect('/library');
+
   const guides = getAllGuides();
 
   const webAppJsonLd = {
