@@ -99,7 +99,11 @@ async function flushQueue(db: DB) {
 }
 
 async function pullChanges(db: DB) {
-  const lastSync = localStorage.getItem('lastSyncDate');
+  // lastSyncDate lives in localStorage, separate from the IndexedDB data it describes.
+  // If storage was cleared/evicted but localStorage survived, a delta sync would never
+  // backfill the missing data — so fall back to a full sync whenever IndexedDB is empty.
+  const hasLocalData = (await db.count('books')) > 0 || (await db.count('highlights')) > 0;
+  const lastSync = hasLocalData ? localStorage.getItem('lastSyncDate') : null;
   const query = lastSync ? `?since=${encodeURIComponent(lastSync)}` : '';
   const res = await fetch(`/api/sync${query}`);
   // The proxy answers signed-out API calls with a redirect to the login page, not a 401
