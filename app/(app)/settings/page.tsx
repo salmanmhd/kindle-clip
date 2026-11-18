@@ -18,12 +18,19 @@ import ExportAllOfflineButton from '@/components/ExportAllOfflineButton';
 import Link from 'next/link';
 import { History, Trash2, BookOpen, RotateCcw, CheckCircle2 } from 'lucide-react';
 
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kindle-clip.vercel.app';
+
 export default async function SettingsPage() {
   const session = await auth();
   if (!session?.user?.id) return redirect('/login');
 
   await dbConnect();
   const user = await User.findById(session.user.id).lean();
+  let uploadToken = user?.uploadToken || null;
+  if (user && !uploadToken) {
+    uploadToken = crypto.randomBytes(24).toString('hex');
+    await User.updateOne({ _id: session.user.id }, { uploadToken });
+  }
   const booksWithStats = await getUserBooksRevisionStats(session.user.id);
 
   // Active book determination
@@ -74,6 +81,17 @@ export default async function SettingsPage() {
     } else {
       await resetAllBooksRevision(session.user.id);
     }
+    revalidatePath('/settings');
+  }
+
+  async function regenerateUploadToken() {
+    'use server';
+    const session = await auth();
+    if (!session?.user?.id) return;
+
+    await dbConnect();
+    const uploadToken = crypto.randomBytes(24).toString('hex');
+    await User.updateOne({ _id: session.user.id }, { uploadToken });
     revalidatePath('/settings');
   }
 
@@ -284,6 +302,32 @@ export default async function SettingsPage() {
             Verify your email configuration and preview your current book revision highlights immediately.
           </p>
           <TestEmailButton action={sendTestEmail} />
+        </div>
+
+        <div className="mt-8 pt-8 border-t border-border">
+          <h3 className="text-lg font-serif text-ink mb-2">Automatic Kindle Sync</h3>
+          <p className="text-sm text-muted mb-4">
+            A script you run on the device can POST <code className="text-xs bg-secondary/50 px-1 py-0.5 rounded">My Clippings.txt</code> here
+            whenever it comes online, instead of uploading it by hand. Keep this token secret — anyone with it can import highlights to your account.
+          </p>
+          <div className="bg-background/80 border border-border rounded-lg px-3 py-2 text-xs font-mono text-ink break-all mb-3">
+            {uploadToken}
+          </div>
+          <p className="text-xs text-muted mb-3">
+            Endpoint: <code className="bg-secondary/50 px-1 py-0.5 rounded">POST {appUrl}/api/kindle-sync</code>
+            <br />
+            Header: <code className="bg-secondary/50 px-1 py-0.5 rounded">Authorization: Bearer &lt;token above&gt;</code>
+            <br />
+            Body: the raw contents of My Clippings.txt (plain text, or multipart with a <code className="bg-secondary/50 px-1 py-0.5 rounded">file</code> field)
+          </p>
+          <form action={regenerateUploadToken}>
+            <button
+              type="submit"
+              className="text-xs font-medium text-ink/80 hover:text-ink underline"
+            >
+              Regenerate token
+            </button>
+          </form>
         </div>
 
         <div className="mt-8 pt-8 border-t border-border">

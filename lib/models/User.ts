@@ -16,6 +16,7 @@ export interface IUser extends Document {
   };
   unsubscribeToken: string;
   lastDailyEmailDate: string | null;
+  uploadToken: string | null;
 }
 
 const UserSchema = new Schema<IUser>({
@@ -33,7 +34,8 @@ const UserSchema = new Schema<IUser>({
     highlightsPerEmail: { type: Number, default: 3 }
   },
   unsubscribeToken: { type: String, required: true },
-  lastDailyEmailDate: { type: String, default: null }
+  lastDailyEmailDate: { type: String, default: null },
+  uploadToken: { type: String, default: null, index: true, sparse: true }
 });
 
 export const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
