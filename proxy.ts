@@ -24,6 +24,9 @@ export default auth((req) => {
     nextUrl.pathname === '/signup' || 
     nextUrl.pathname.startsWith('/api/cron/') ||
     nextUrl.pathname.startsWith('/api/unsubscribe') ||
+    // Authenticated with its own per-user Bearer token instead of a session cookie,
+    // for an unattended client (e.g. a script on the Kindle) that can't hold one.
+    nextUrl.pathname === '/api/kindle-sync' ||
     nextUrl.pathname === '/robots.txt' ||
     nextUrl.pathname === '/sitemap.xml' ||
     nextUrl.pathname === '/opengraph-image' ||
